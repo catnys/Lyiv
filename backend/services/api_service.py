@@ -25,11 +25,26 @@ data_processor = None
 data_helpers = None
 advanced_analysis = None
 
+def get_data_helpers():
+    """Get data_helpers instance from app context"""
+    from flask import current_app
+    return current_app.data_helpers
+
+def get_data_processor():
+    """Get data_processor instance from app context"""
+    from flask import current_app
+    return current_app.data_processor
+
+def get_advanced_analysis():
+    """Get advanced_analysis instance from app context"""
+    from flask import current_app
+    return current_app.advanced_analysis
+
 @api_bp.route('/status', methods=['GET'])
 def get_status():
     """Get system status"""
     try:
-        status = data_helpers.get_frontend_system_status()
+        status = get_data_helpers().get_frontend_system_status()
         return jsonify(APIResponse.success(status, "System status retrieved"))
     except Exception as e:
         return jsonify(handle_exception(e, "get_status")), 500
@@ -159,10 +174,19 @@ def get_cache_analysis():
 def get_basic_metrics():
     """Get basic metrics for simple frontend"""
     try:
-        metrics = data_helpers.get_basic_metrics()
+        metrics = get_data_helpers().get_basic_metrics()
         return jsonify(APIResponse.success(metrics, "Basic metrics retrieved"))
     except Exception as e:
         return jsonify(handle_exception(e, "get_basic_metrics")), 500
+
+@api_bp.route('/register-analysis', methods=['GET'])
+def get_register_analysis():
+    """Get deep register spill analysis"""
+    try:
+        analysis = get_data_helpers().get_register_spill_analysis()
+        return jsonify(APIResponse.success(analysis, "Register spill analysis retrieved"))
+    except Exception as e:
+        return jsonify(handle_exception(e, "get_register_analysis")), 500
 
 @api_bp.route('/debug-stats', methods=['GET'])
 def debug_stats():
