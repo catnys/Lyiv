@@ -1,197 +1,146 @@
-# 🎮 Gem5 Simulation Analyzer - Web Edition 🎮
+# Lyiv
+Smooth latte gem5 interface
 
-A modern web-based gem5 simulation analyzer with Flask backend and interactive JavaScript frontend. Features cute animations, real-time data visualization, and comprehensive analysis tools.
+## 🎮 Gem5 Statistics Web Application
+
+A modern web-based gem5 simulation analyzer with React frontend and Flask backend. Features dark/light theme toggle, tooltip system for data source information, and responsive design.
 
 ## ✨ Features
 
 - 🎯 **Register Spill Analysis**: Detailed analysis of register spills with visualizations
-- ⚡ **Performance Metrics**: CPU performance analysis with cute metric cards
+- ⚡ **Performance Metrics**: CPU performance analysis with interactive metric cards
 - 💾 **Memory System Analysis**: Memory subsystem performance and statistics
-- 📈 **Interactive Visualizations**: Multiple chart types for different analyses
-- 🎭 **Cute Animations**: Lively UI with colorful animations and emojis
+- 📈 **Interactive Tooltips**: Data source information with hover tooltips
+- 🎭 **Theme Toggle**: Dark/light theme switching
 - 📊 **Real-time Updates**: Live data loading and display updates
+- 📱 **Responsive Design**: Works on all screen sizes
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.7+
-- tkinter (usually included with Python)
-- Required packages (see requirements.txt)
+- Node.js 14+
+- npm or yarn
 
 ### Installation
 
-1. **Clone or download the files**
-2. **Install dependencies**:
+1. **Clone the repository**:
    ```bash
-   pip install -r requirements.txt
+   git clone git@github.com:catnys/Lyiv.git
+   cd Lyiv
    ```
 
-3. **Run the web application**:
+2. **Backend setup**:
    ```bash
+   cd backend
+   pip install -r requirements.txt
    python app.py
+   ```
+
+3. **Frontend setup** (in a new terminal):
+   ```bash
+   cd frontend
+   npm install
+   npm start
    ```
 
 4. **Open your browser** and go to:
    ```
-   http://localhost:5001
+   http://localhost:3000
    ```
 
 ## 📁 File Structure
 
 ```
 Lyiv/
-├── app.py                 # Flask backend application
-├── requirements.txt       # Python dependencies
-├── README.md             # This file
-├── templates/            # HTML templates
-│   └── index.html        # Main web interface
-├── static/               # Static web assets
-│   ├── css/
-│   │   └── style.css     # Cute CSS styles
-│   └── js/
-│       └── app.js        # Interactive JavaScript
-└── m5out/                # gem5 output directory
-    ├── stats.txt         # Simulation statistics
-    ├── x86_spill_stats.txt # Register spill data
-    ├── config.json       # Simulation configuration
-    └── count_stats.txt   # Additional statistics
+├── backend/                 # Flask backend
+│   ├── app.py              # Main Flask application
+│   ├── requirements.txt    # Python dependencies
+│   ├── services/           # API services
+│   ├── utils/              # Data processing utilities
+│   └── models/             # Data models
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── App.tsx         # Main React component
+│   │   ├── App.css         # Styling
+│   │   └── services/       # API services
+│   ├── package.json        # Node dependencies
+│   └── public/             # Static assets
+├── m5out/                  # gem5 output directory
+│   ├── stats.txt           # Simulation statistics
+│   ├── x86_spill_stats.txt # Register spill data
+│   └── config.json         # Simulation configuration
+└── README.md               # This file
 ```
 
 ## 🎮 Usage
 
 ### Automatic Loading
-The web application automatically loads data from the `m5out/` directory if it exists.
+The web application automatically loads data from the `m5out/` directory.
 
 ### Web Interface Features
-- 🔄 **Auto-refresh**: Data updates every 30 seconds
-- 📊 **Interactive Charts**: Click and hover for details
-- 🎯 **Real-time Updates**: Live data visualization
+- 🔄 **Auto-refresh**: Data updates automatically
+- 📊 **Interactive Tooltips**: Hover over ℹ️ buttons for data source info
+- 🎯 **Theme Toggle**: Switch between dark/light themes
 - 📱 **Responsive Design**: Works on all screen sizes
+- 📈 **Normal Scroll**: Smooth vertical scrolling between sections
 
-### Web Interface Sections
-
-#### 📊 Overview Section
-- Key performance metrics in cute animated cards
-- Register spill summary statistics
-- Real-time performance indicators
-
-#### ⚡ Performance Metrics Table
-- Detailed CPU performance metrics
-- Instruction execution statistics
-- Interactive data tables
-
-#### 🎯 Spill Analysis
-- Register spill event details
-- Spill timeline and patterns
-- Memory address analysis
-
-#### 📈 Interactive Charts
-- **📊 Instruction Mix**: Doughnut chart of instruction types
-- **⏱️ Spill Timeline**: Scatter plot of spill events over time
-- **🔥 Spill Heatmap**: Bar chart of address-based spill analysis
+### Data Sources
+Each metric shows its data source and calculation method:
+- **Total Instructions**: `stats.txt` → `simInsts`
+- **Total Ticks**: `stats.txt` → `simTicks`
+- **Total Loads**: `stats.txt` → `system.cpu.commitStats0.numLoadInsts`
+- **Total Stores**: `stats.txt` → `system.cpu.commitStats0.numStoreInsts`
+- **Total Spills**: `x86_spill_stats.txt` → spill count
+- **Percentages**: Calculated ratios with formulas
 
 ## 🎨 Customization
 
 ### Colors and Themes
-The web interface uses a modern dark theme with vibrant accent colors:
-- Background: `#1a1a2e` (Dark blue gradient)
-- Cards: `#2c2c54` (Medium blue)
-- Accent: `#ff6b6b` (Coral red)
-- Success: `#4ecdc4` (Turquoise)
-- Interactive: `#45b7d1` (Sky blue)
-
-### Adding New Visualizations
-Extend the JavaScript `Gem5Analyzer` class to add new chart types and API endpoints.
+The web interface supports both light and dark themes:
+- **Light Theme**: Clean white background with blue accents
+- **Dark Theme**: Dark background with gold accents
+- **Tooltips**: Blue borders (light) / Gold borders (dark)
 
 ### API Endpoints
-- `/api/overview` - Key metrics
-- `/api/performance` - Performance data
-- `/api/spills` - Spill events
-- `/api/instruction-mix` - Instruction distribution
-- `/api/spill-timeline` - Timeline data
-- `/api/spill-heatmap` - Heatmap data
-- `/api/reload` - Reload data
-- `/api/status` - System status
+- `/api/basic-metrics` - Basic performance metrics
+- `/api/debug-stats` - Debug information
 
 ## 🔧 Technical Details
 
 ### Data Parsing
-- **stats.txt**: Parsed line by line for metric extraction
-- **x86_spill_stats.txt**: CSV format with spill event data
-- **config.json**: JSON configuration data
+- **stats.txt**: Parsed for metric extraction
+- **x86_spill_stats.txt**: Spill event counting
+- **config.json**: Configuration data
 
 ### Performance
 - Efficient data loading with pandas
 - RESTful API with Flask
-- Interactive charts with Chart.js
-- Responsive design with Bootstrap
-- Real-time updates with JavaScript
+- React frontend with TypeScript
+- Responsive design with CSS Grid
+- Real-time updates with React hooks
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Import Errors**: Make sure all dependencies are installed
-   ```bash
-   pip install flask flask-cors pandas numpy
-   ```
-
-2. **Port Issues**: If port 5001 is busy, change it in app.py
-   ```python
-   app.run(debug=True, host='0.0.0.0', port=5002)
-   ```
-
-3. **Browser Issues**: Make sure JavaScript is enabled
+1. **Backend Port Issues**: If port 5002 is busy, change it in `backend/app.py`
+2. **Frontend Port Issues**: If port 3000 is busy, React will suggest an alternative
+3. **Data Loading**: Make sure `m5out/` directory exists with required files
 
 ### Performance Tips
-- Limit spill data display for better performance
 - Use browser developer tools for debugging
 - Check browser console for JavaScript errors
 - Refresh page if data seems stale
 
-## 🎯 Register Spill Analysis
-
-The web application provides comprehensive analysis of register spills:
-
-### Spill Detection Format
-```
-SPILL,store_pc,load_pc,memory_address,store_tick,load_tick,tick_diff,store_inst_count,load_inst_count
-```
-
-### Key Metrics
-- **Total Spills**: Number of detected spill events
-- **Average Tick Difference**: Mean time between store and load
-- **Memory Address Patterns**: Common spill locations
-- **Instruction Timing**: Spill correlation with instruction count
-
-## 🎭 Web Features
-
-- Pulsing metric cards with color transitions
-- Emoji-rich interface for better user experience
-- Smooth animations for data updates
-- Colorful charts with vibrant palettes
-- Interactive hover effects
-- Real-time data refresh
-- Responsive mobile design
-
-## 📊 Sample Analysis
-
-The web application automatically analyzes your gem5 simulation results and provides:
-
-1. **Performance Summary**: IPC, CPI, instruction counts
-2. **Memory Analysis**: Load/store patterns, cache behavior
-3. **Spill Patterns**: Register spill frequency and timing
-4. **Visual Insights**: Charts and graphs for pattern recognition
-
 ## 🤝 Contributing
 
-Feel free to enhance the web application with:
-- New visualization types with Chart.js
+Feel free to enhance the application with:
+- New visualization types
 - Additional API endpoints
 - Improved animations and effects
 - Better error handling
 - Performance optimizations
-- Mobile app integration
 
 ## 📄 License
 
@@ -199,4 +148,4 @@ This project is open source and available under the MIT License.
 
 ---
 
-**Enjoy analyzing your gem5 simulations with this cute and modern web interface! 🎮✨**
+**Enjoy analyzing your gem5 simulations with this smooth and modern interface! 🎮✨**
