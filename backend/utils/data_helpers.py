@@ -297,7 +297,7 @@ class Gem5DataHelpers:
             total_loads = self.stats_data.get('system.cpu.commitStats0.numLoadInsts', {}).get('value', '0')
             total_stores = self.stats_data.get('system.cpu.commitStats0.numStoreInsts', {}).get('value', '0')
             
-            # Extract spill data - count lines that start with "SPILL"
+            # Extract spill data - count rows in DataFrame
             total_spills = len(self.spill_data) if not self.spill_data.empty else 0
             
             # Convert strings to numbers
@@ -332,4 +332,112 @@ class Gem5DataHelpers:
                 'load_percentage': 0.0,
                 'store_percentage': 0.0,
                 'spill_percentage': 0.0
+            }
+
+    def get_register_spill_analysis(self) -> Dict[str, Any]:
+        """Get deep register spill analysis"""
+        try:
+            # Parse spill data to extract memory address information
+            memory_address_spills = {}
+            address_details = {}
+            
+            # Iterate through DataFrame rows
+            for _, row in self.spill_data.iterrows():
+                memory_address = row['memory_address']
+                store_pc = row['store_pc']
+                load_pc = row['load_pc']
+                store_tick = row['store_tick']
+                load_tick = row['load_tick']
+                tick_diff = row['tick_diff']
+                store_inst_count = row['store_inst_count']
+                load_inst_count = row['load_inst_count']
+                
+                if memory_address in memory_address_spills:
+                    memory_address_spills[memory_address] += 1
+                    # Update details with aggregated info
+                    address_details[memory_address]['total_tick_diff'] += tick_diff
+                    address_details[memory_address]['avg_tick_diff'] = address_details[memory_address]['total_tick_diff'] / memory_address_spills[memory_address]
+                    address_details[memory_address]['store_pcs'].add(store_pc)
+                    address_details[memory_address]['load_pcs'].add(load_pc)
+                    address_details[memory_address]['store_inst_counts'].append(store_inst_count)
+                    address_details[memory_address]['load_inst_counts'].append(load_inst_count)
+                else:
+                    memory_address_spills[memory_address] = 1
+                    address_details[memory_address] = {
+                        'total_tick_diff': tick_diff,
+                        'avg_tick_diff': tick_diff,
+                        'store_pcs': {store_pc},
+                        'load_pcs': {load_pc},
+                        'store_inst_counts': [store_inst_count],
+                        'load_inst_counts': [load_inst_count],
+                        'first_spill_tick': store_tick,
+                        'last_spill_tick': store_tick
+                    }
+                
+                # Update first and last spill times
+                if store_tick < address_details[memory_address]['first_spill_tick']:
+                    address_details[memory_address]['first_spill_tick'] = store_tick
+                if store_tick > address_details[memory_address]['last_spill_tick']:
+                    address_details[memory_address]['last_spill_tick'] = store_tick
+            
+            # Sort by spill count and get top 10
+            sorted_addresses = sorted(memory_address_spills.items(), key=lambda x: x[1], reverse=True)
+            top_10_addresses = sorted_addresses[:10]
+            
+            # Calculate total spills
+            total_spills = sum(memory_address_spills.values())
+            
+            # Create analysis data
+            analysis = {
+                'total_registers': len(memory_address_spills),
+                'total_spills': total_spills,
+                'top_10_registers': [
+                    {
+                        'register': f"Memory_{addr[0][-4:]}",
+                        'spill_count': addr[1],
+                        'percentage': round((addr[1] / total_spills * 100), 2) if total_spills > 0 else 0,
+                        'memory_address': addr[0],
+                        'details': {
+                            'avg_tick_diff': round(address_details[addr[0]]['avg_tick_diff'], 2),
+                            'unique_store_pcs': len(address_details[addr[0]]['store_pcs']),
+                            'unique_load_pcs': len(address_details[addr[0]]['load_pcs']),
+                            'first_spill_tick': address_details[addr[0]]['first_spill_tick'],
+                            'last_spill_tick': address_details[addr[0]]['last_spill_tick'],
+                            'spill_duration': address_details[addr[0]]['last_spill_tick'] - address_details[addr[0]]['first_spill_tick'],
+                            'avg_store_inst_count': round(sum(address_details[addr[0]]['store_inst_counts']) / len(address_details[addr[0]]['store_inst_counts']), 2),
+                            'avg_load_inst_count': round(sum(address_details[addr[0]]['load_inst_counts']) / len(address_details[addr[0]]['load_inst_counts']), 2)
+                        }
+                    }
+                    for addr in top_10_addresses
+                ],
+                'all_registers': [
+                    {
+                        'register': f"Memory_{addr[0][-4:]}",
+                        'spill_count': addr[1],
+                        'percentage': round((addr[1] / total_spills * 100), 2) if total_spills > 0 else 0,
+                        'memory_address': addr[0],
+                        'details': {
+                            'avg_tick_diff': round(address_details[addr[0]]['avg_tick_diff'], 2),
+                            'unique_store_pcs': len(address_details[addr[0]]['store_pcs']),
+                            'unique_load_pcs': len(address_details[addr[0]]['load_pcs']),
+                            'first_spill_tick': address_details[addr[0]]['first_spill_tick'],
+                            'last_spill_tick': address_details[addr[0]]['last_spill_tick'],
+                            'spill_duration': address_details[addr[0]]['last_spill_tick'] - address_details[addr[0]]['first_spill_tick'],
+                            'avg_store_inst_count': round(sum(address_details[addr[0]]['store_inst_counts']) / len(address_details[addr[0]]['store_inst_counts']), 2),
+                            'avg_load_inst_count': round(sum(address_details[addr[0]]['load_inst_counts']) / len(address_details[addr[0]]['load_inst_counts']), 2)
+                        }
+                    }
+                    for addr in sorted_addresses
+                ]
+            }
+            
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"Error getting register spill analysis: {e}")
+            return {
+                'total_registers': 0,
+                'total_spills': 0,
+                'top_10_registers': [],
+                'all_registers': []
             }
