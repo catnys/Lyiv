@@ -312,6 +312,136 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **v1.5.0**: Implemented register spill analysis and memory system statistics
 - **v1.0.0**: Initial release with basic gem5 simulation analysis features
 
+## 🚀 Next Steps (Development Notes)
+
+### 📊 SQL Database Integration for Instruction-Level Analysis
+
+**Goal**: Create a comprehensive SQL database to store all gem5 instruction-level data for dynamic analysis.
+
+#### 🗄️ Proposed Database Schema
+
+```sql
+-- Main instructions table
+CREATE TABLE instructions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    instruction_id BIGINT NOT NULL,
+    is_spill BOOLEAN DEFAULT FALSE,
+    instruction_type VARCHAR(50),
+    instruction_name VARCHAR(100),
+    store_pc BIGINT,
+    load_pc BIGINT,
+    execution_cycle BIGINT,
+    commit_cycle BIGINT,
+    fetch_cycle BIGINT,
+    decode_cycle BIGINT,
+    issue_cycle BIGINT,
+    writeback_cycle BIGINT,
+    cpu_id INT DEFAULT 0,
+    thread_id INT DEFAULT 0,
+    sequence_number BIGINT,
+    opcode VARCHAR(20),
+    num_dest_regs INT,
+    num_src_regs INT,
+    memory_address BIGINT,
+    memory_size INT,
+    is_memory_op BOOLEAN DEFAULT FALSE,
+    is_branch BOOLEAN DEFAULT FALSE,
+    is_control BOOLEAN DEFAULT FALSE,
+    branch_target BIGINT,
+    branch_taken BOOLEAN,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Register usage tracking
+CREATE TABLE register_usage (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    instruction_id BIGINT,
+    register_name VARCHAR(20),
+    register_type ENUM('integer', 'float', 'vector', 'control'),
+    operation_type ENUM('read', 'write', 'spill', 'restore'),
+    register_value BIGINT,
+    spill_address BIGINT,
+    FOREIGN KEY (instruction_id) REFERENCES instructions(id)
+);
+
+-- Memory access tracking
+CREATE TABLE memory_access (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    instruction_id BIGINT,
+    access_type ENUM('load', 'store', 'prefetch'),
+    memory_address BIGINT,
+    memory_size INT,
+    cache_level ENUM('L1', 'L2', 'L3', 'main_memory'),
+    hit_miss ENUM('hit', 'miss'),
+    latency_cycles INT,
+    FOREIGN KEY (instruction_id) REFERENCES instructions(id)
+);
+
+-- Performance metrics per instruction
+CREATE TABLE instruction_metrics (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    instruction_id BIGINT,
+    cpi DECIMAL(10,4),
+    ipc DECIMAL(10,4),
+    stall_cycles INT,
+    dependency_cycles INT,
+    cache_miss_penalty INT,
+    branch_misprediction_penalty INT,
+    FOREIGN KEY (instruction_id) REFERENCES instructions(id)
+);
+
+-- Indexes for performance
+CREATE INDEX idx_instruction_id ON instructions(instruction_id);
+CREATE INDEX idx_is_spill ON instructions(is_spill);
+CREATE INDEX idx_instruction_type ON instructions(instruction_type);
+CREATE INDEX idx_execution_cycle ON instructions(execution_cycle);
+CREATE INDEX idx_memory_address ON instructions(memory_address);
+CREATE INDEX idx_register_usage_instruction ON register_usage(instruction_id);
+CREATE INDEX idx_memory_access_instruction ON memory_access(instruction_id);
+```
+
+#### 🔧 Implementation Plan
+
+1. **Data Parser Enhancement**
+   - Extend `simple_reader.py` to parse instruction-level data
+   - Add SQLite/PostgreSQL integration
+   - Create data insertion pipeline
+
+2. **Backend API Extensions**
+   - Add endpoints for instruction-level queries
+   - Implement complex analytics queries
+   - Add real-time data streaming
+
+3. **Frontend Analytics Dashboard**
+   - Instruction timeline visualization
+   - Register usage heatmaps
+   - Memory access pattern analysis
+   - Performance bottleneck identification
+
+4. **Advanced Analytics Features**
+   - Machine learning-based performance prediction
+   - Anomaly detection in instruction patterns
+   - Comparative analysis between different runs
+   - Interactive query builder
+
+#### 📈 Expected Benefits
+
+- **Granular Analysis**: Instruction-by-instruction performance tracking
+- **Pattern Recognition**: Identify recurring performance issues
+- **Optimization Insights**: Data-driven optimization recommendations
+- **Scalability**: Handle large simulation datasets efficiently
+- **Flexibility**: Custom queries for specific research questions
+
+#### 🎯 Key Metrics to Track
+
+- Instruction execution patterns
+- Register spill frequency and patterns
+- Memory access locality
+- Branch prediction accuracy
+- Cache performance per instruction
+- Pipeline stall analysis
+- Dependency chain visualization
+
 ---
 
 <div align="center">
