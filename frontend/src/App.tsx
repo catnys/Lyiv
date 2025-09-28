@@ -100,6 +100,134 @@ interface CacheMetrics {
   };
 }
 
+interface ScatterPlotData {
+  x: number;
+  y: number;
+  group: string;
+  color: string;
+  size: number;
+  details: Record<string, any>;
+}
+
+interface ScatterPlot {
+  title: string;
+  x_label: string;
+  y_label: string;
+  description: string;
+  data: ScatterPlotData[];
+}
+
+interface ScatterPlots {
+  memory_performance: ScatterPlot;
+  cache_performance: ScatterPlot;
+  instruction_performance: ScatterPlot;
+}
+
+interface SpillEvent {
+  store_pc: string;
+  load_pc: string;
+  memory_address: string;
+  store_tick: number;
+  load_tick: number;
+  tick_diff: number;
+  store_inst_count: number;
+  load_inst_count: number;
+  line_number: number;
+}
+
+interface SpillAnalysis {
+  spill_count: number;
+  architecture: string;
+  spill_file: string;
+  statistics: {
+    total_spills: number;
+    avg_spill_duration: number;
+    unique_memory_addresses: number;
+    unique_store_pcs: number;
+    unique_load_pcs: number;
+    max_spill_duration: number;
+    min_spill_duration: number;
+  };
+  charts: {
+    spill_duration_distribution: {
+      title: string;
+      description: string;
+      buckets: Array<{
+        range: string;
+        count: number;
+        percentage: number;
+        start: number;
+        end: number;
+      }>;
+      total_spills: number;
+      avg_duration: number;
+      min_duration: number;
+      max_duration: number;
+    };
+    memory_address_distribution: {
+      title: string;
+      description: string;
+      data: Array<{
+        range: string;
+        count: number;
+        percentage: number;
+        start: number;
+        end: number;
+      }>;
+      unique_addresses: number;
+      total_spills: number;
+    };
+    instruction_distance_analysis: {
+      title: string;
+      description: string;
+      buckets: Array<{
+        range: string;
+        count: number;
+        percentage: number;
+        start: number;
+        end: number;
+      }>;
+      avg_distance: number;
+      min_distance: number;
+      max_distance: number;
+    };
+    pc_pattern_analysis: {
+      title: string;
+      description: string;
+      patterns: {
+        top_store_pcs: Array<{pc: string; count: number}>;
+        top_load_pcs: Array<{pc: string; count: number}>;
+      };
+      total_unique_pcs: number;
+    };
+            timeline_analysis: {
+              title: string;
+              description: string;
+              data: Array<{
+                time_window: string;
+                count: number;
+                start_time: number;
+                end_time: number;
+              }>;
+              total_time_span: number;
+            };
+            scatter_plot_data: {
+              title: string;
+              description: string;
+              data: Array<{
+                id: string;
+                duration: number;
+                memory_address: number;
+                pc: string;
+                load_pc?: string;
+                store_pc?: string;
+                impact_level: 'critical' | 'high-impact' | 'medium-impact' | 'low-impact' | 'normal';
+              }>;
+              total_points: number;
+            };
+          };
+        }
+
 interface DataSource {
   file: string;
   line?: string;
@@ -119,6 +247,7 @@ function App() {
   const [memorySystemStats, setMemorySystemStats] = useState<MemorySystemStats | null>(null);
   const [efficiencyMetrics, setEfficiencyMetrics] = useState<EfficiencyMetrics | null>(null);
   const [cacheMetrics, setCacheMetrics] = useState<CacheMetrics | null>(null);
+  const [spillAnalysis, setSpillAnalysis] = useState<SpillAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -131,7 +260,7 @@ function App() {
         setLoading(true);
         
         // Fetch basic metrics
-        const metricsResponse = await fetch('http://localhost:5002/api/basic-metrics');
+        const metricsResponse = await fetch('http://localhost:5050/api/basic-metrics');
         if (!metricsResponse.ok) {
           throw new Error(`HTTP error! status: ${metricsResponse.status}`);
         }
@@ -145,7 +274,7 @@ function App() {
         
         
         // Fetch instruction types
-        const instructionTypesResponse = await fetch('http://localhost:5002/api/instruction-types');
+        const instructionTypesResponse = await fetch('http://localhost:5050/api/instruction-types');
         if (!instructionTypesResponse.ok) {
           throw new Error(`HTTP error! status: ${instructionTypesResponse.status}`);
         }
@@ -158,7 +287,7 @@ function App() {
         }
         
         // Fetch memory system stats
-        const memorySystemResponse = await fetch('http://localhost:5002/api/memory-system');
+        const memorySystemResponse = await fetch('http://localhost:5050/api/memory-system');
         if (!memorySystemResponse.ok) {
           throw new Error(`HTTP error! status: ${memorySystemResponse.status}`);
         }
@@ -171,7 +300,7 @@ function App() {
         }
         
         // Fetch efficiency metrics
-        const efficiencyResponse = await fetch('http://localhost:5002/api/efficiency-metrics');
+        const efficiencyResponse = await fetch('http://localhost:5050/api/efficiency-metrics');
         if (!efficiencyResponse.ok) {
           throw new Error(`HTTP error! status: ${efficiencyResponse.status}`);
         }
@@ -184,7 +313,7 @@ function App() {
         }
         
         // Fetch cache metrics
-        const cacheResponse = await fetch('http://localhost:5002/api/cache-metrics');
+        const cacheResponse = await fetch('http://localhost:5050/api/cache-metrics');
         if (!cacheResponse.ok) {
           throw new Error(`HTTP error! status: ${cacheResponse.status}`);
         }
@@ -194,6 +323,19 @@ function App() {
           setCacheMetrics(cacheResult.data);
         } else {
           setError('Failed to fetch cache metrics');
+        }
+        
+        // Fetch spill analysis data
+        const spillResponse = await fetch('http://localhost:5050/api/spill-analysis');
+        if (!spillResponse.ok) {
+          throw new Error(`HTTP error! status: ${spillResponse.status}`);
+        }
+        const spillResult: ApiResponse<SpillAnalysis> = await spillResponse.json();
+        
+        if (spillResult.success) {
+          setSpillAnalysis(spillResult.data);
+        } else {
+          setError('Failed to fetch spill analysis data');
         }
         
       } catch (err) {
@@ -240,6 +382,1228 @@ function App() {
 
   const toggleTheme = () => {
     setIsDarkTheme(prev => !prev);
+  };
+
+  // Scatter Plot Component
+  const ScatterPlot: React.FC<{ plot: ScatterPlot; isDarkTheme: boolean }> = ({ plot, isDarkTheme }) => {
+    const canvasRef = useRef<HTMLDivElement>(null);
+    const tooltipRef = useRef<HTMLDivElement>(null);
+    const [tooltip, setTooltip] = useState<{ show: boolean; x: number; y: number; content: any }>({
+      show: false,
+      x: 0,
+      y: 0,
+      content: null
+    });
+
+    useEffect(() => {
+      if (!canvasRef.current || !plot.data.length) return;
+
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width - 40; // padding
+      const height = rect.height - 40; // padding
+
+      // Calculate scales
+      const xValues = plot.data.map(d => d.x);
+      const yValues = plot.data.map(d => d.y);
+      const xMin = Math.min(...xValues);
+      const xMax = Math.max(...xValues);
+      const yMin = Math.min(...yValues);
+      const yMax = Math.max(...yValues);
+
+      const xScale = (x: number) => 20 + ((x - xMin) / (xMax - xMin)) * (width - 40);
+      const yScale = (y: number) => 20 + ((yMax - y) / (yMax - yMin)) * (height - 40);
+
+      // Clear canvas
+      canvas.innerHTML = '';
+
+      // Create grid lines
+      const gridContainer = document.createElement('div');
+      gridContainer.className = 'scatter-plot-grid-lines';
+      
+      // Horizontal grid lines
+      for (let i = 0; i <= 5; i++) {
+        const line = document.createElement('div');
+        line.className = 'scatter-plot-grid-line horizontal';
+        line.style.top = `${20 + (i * (height - 40) / 5)}px`;
+        gridContainer.appendChild(line);
+      }
+
+      // Vertical grid lines
+      for (let i = 0; i <= 5; i++) {
+        const line = document.createElement('div');
+        line.className = 'scatter-plot-grid-line vertical';
+        line.style.left = `${20 + (i * (width - 40) / 5)}px`;
+        gridContainer.appendChild(line);
+      }
+
+      canvas.appendChild(gridContainer);
+
+      // Create points
+      plot.data.forEach((point, index) => {
+        const pointElement = document.createElement('div');
+        pointElement.className = 'scatter-plot-point';
+        pointElement.style.left = `${xScale(point.x)}px`;
+        pointElement.style.top = `${yScale(point.y)}px`;
+        pointElement.style.width = `${point.size}px`;
+        pointElement.style.height = `${point.size}px`;
+        pointElement.style.backgroundColor = point.color;
+        pointElement.style.animationDelay = `${index * 0.1}s`;
+
+        pointElement.addEventListener('mouseenter', (e) => {
+          setTooltip({
+            show: true,
+            x: e.clientX,
+            y: e.clientY,
+            content: point
+          });
+        });
+
+        pointElement.addEventListener('mouseleave', () => {
+          setTooltip(prev => ({ ...prev, show: false }));
+        });
+
+        canvas.appendChild(pointElement);
+      });
+
+    }, [plot.data]);
+
+    useEffect(() => {
+      if (tooltip.show && tooltipRef.current) {
+        tooltipRef.current.style.left = `${tooltip.x + 10}px`;
+        tooltipRef.current.style.top = `${tooltip.y - 10}px`;
+      }
+    }, [tooltip]);
+
+    return (
+      <div className="scatter-plot-container">
+        <div className="scatter-plot-header">
+          <div>
+            <h4 className="scatter-plot-title">{plot.title}</h4>
+            <p className="scatter-plot-description">{plot.description}</p>
+          </div>
+        </div>
+        
+        <div className="scatter-plot-canvas" ref={canvasRef}>
+          <div className="scatter-plot-x-axis">{plot.x_label}</div>
+          <div className="scatter-plot-y-axis">{plot.y_label}</div>
+        </div>
+
+        <div className="scatter-plot-legend">
+          {plot.data.map((point, index) => (
+            <div key={index} className="scatter-plot-legend-item">
+              <div 
+                className="scatter-plot-legend-color" 
+                style={{ backgroundColor: point.color }}
+              />
+              <span>{point.group}</span>
+            </div>
+          ))}
+        </div>
+
+        <div 
+          ref={tooltipRef}
+          className={`scatter-plot-tooltip ${tooltip.show ? 'show' : ''}`}
+        >
+          {tooltip.content && (
+            <>
+              <h4>{tooltip.content.group}</h4>
+              <p><strong>X:</strong> {tooltip.content.x.toFixed(2)}</p>
+              <p><strong>Y:</strong> {tooltip.content.y.toFixed(2)}</p>
+              {Object.entries(tooltip.content.details).map(([key, value]) => (
+                <p key={key}><strong>{key}:</strong> {String(value)}</p>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Histogram Chart Component
+  const HistogramChart: React.FC<{
+    title: string;
+    description: string;
+    buckets: Array<{
+      range: string;
+      count: number;
+      percentage: number;
+      start: number;
+      end: number;
+    }>;
+    isDarkTheme: boolean;
+  }> = ({ title, description, buckets, isDarkTheme }) => {
+    const maxCount = Math.max(...buckets.map(b => b.count));
+    
+    return (
+      <div className="chart-container">
+        <div className="chart-header">
+          <div>
+            <h4 className="chart-title">{title}</h4>
+            <p className="chart-description">{description}</p>
+          </div>
+        </div>
+        
+        <div className="histogram-chart">
+          {buckets.map((bucket, index) => (
+            <div key={index} className="histogram-bar">
+              <div className="histogram-label">{bucket.range}</div>
+              <div className="histogram-bar-container">
+                <div 
+                  className="histogram-bar-fill"
+                  style={{ width: `${(bucket.count / maxCount) * 100}%` }}
+                />
+              </div>
+              <div className="histogram-value">{bucket.count}</div>
+              <div className="histogram-percentage">{bucket.percentage.toFixed(1)}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // PC Pattern Chart Component
+  const PCPatternChart: React.FC<{
+    title: string;
+    description: string;
+    patterns: {
+      top_store_pcs: Array<{pc: string; count: number}>;
+      top_load_pcs: Array<{pc: string; count: number}>;
+    };
+    isDarkTheme: boolean;
+  }> = ({ title, description, patterns, isDarkTheme }) => {
+    const pcPatternData = patterns;
+    const [expandedItems, setExpandedItems] = useState<{[key: string]: boolean}>({});
+
+    const getMedalIcon = (index: number) => {
+      if (index === 0) return '🥇';
+      if (index === 1) return '🥈';
+      if (index === 2) return '🥉';
+      return `${index + 1}.`;
+    };
+
+    const getMedalClass = (index: number) => {
+      if (index === 0) return 'gold-medal';
+      if (index === 1) return 'silver-medal';
+      if (index === 2) return 'bronze-medal';
+      return 'regular-rank';
+    };
+
+    const toggleExpanded = (key: string) => {
+      setExpandedItems(prev => ({
+        ...prev,
+        [key]: !prev[key]
+      }));
+    };
+
+    const getSpillDetails = (pc: string, count: number, type: 'store' | 'load') => {
+      // First 5 spill events from x86_spill_stats.txt
+      const spillEvents = [
+        { store_pc: '7ffff801f266', load_pc: '7ffff801f323', memory_address: '7ffff8037c10', store_tick: '16364000', load_tick: '19869000', tick_diff: '3505000', store_inst_count: '380', load_inst_count: '459' },
+        { store_pc: '7ffff801f266', load_pc: '7ffff801f346', memory_address: '7ffff8037cb8', store_tick: '15522000', load_tick: '20498000', tick_diff: '4976000', store_inst_count: '367', load_inst_count: '475' },
+        { store_pc: '7ffff801f266', load_pc: '7ffff801f40d', memory_address: '7ffff8037c18', store_tick: '17498000', load_tick: '22721000', tick_diff: '5223000', store_inst_count: '406', load_inst_count: '528' },
+        { store_pc: '7ffff801f266', load_pc: '7ffff801f43d', memory_address: '7ffff8037c60', store_tick: '14262000', load_tick: '23891000', tick_diff: '9629000', store_inst_count: '335', load_inst_count: '549' },
+        { store_pc: '7ffff801f332', load_pc: '7ffff801f477', memory_address: '7ffff8036f50', store_tick: '20134000', load_tick: '24919000', tick_diff: '4785000', store_inst_count: '467', load_inst_count: '576' }
+      ];
+      
+      const impact = count > 1000 ? 'Critical' : count > 500 ? 'High' : count > 100 ? 'Medium' : 'Low';
+      const frequency = count > 500 ? 'Very Frequent' : count > 100 ? 'Frequent' : count > 50 ? 'Occasional' : 'Rare';
+      
+      return {
+        impact,
+        frequency,
+        spillEvents,
+        type: type === 'store' ? 'Memory Write' : 'Memory Read',
+        efficiency: count > 1000 ? 'Poor' : count > 500 ? 'Fair' : count > 100 ? 'Good' : 'Excellent'
+      };
+    };
+
+    return (
+      <div className="chart-container">
+        <div className="chart-header">
+          <div style={{ textAlign: 'center' }}>
+            <h4 className="chart-title">🏆 {title}</h4>
+            <p className="chart-description">{description}</p>
+          </div>
+        </div>
+        
+        <div className="pc-pattern-chart">
+          <div className="pc-pattern-section">
+            <div className="pc-pattern-title">Top Store PCs</div>
+            {patterns.top_store_pcs.slice(0, 5).map((item, index) => {
+              const key = `store-${index}`;
+              const isExpanded = expandedItems[key];
+              const details = getSpillDetails(item.pc, item.count, 'store');
+              
+              return (
+                <div key={index}>
+                  <div 
+                    className={`pc-pattern-item ${getMedalClass(index)} ${isExpanded ? 'expanded' : ''}`}
+                    onClick={() => toggleExpanded(key)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="pc-pattern-rank">
+                      <span className="medal-icon">{getMedalIcon(index)}</span>
+                    </div>
+                    <div className="pc-pattern-pc">{item.pc}</div>
+                    <div className="pc-pattern-count">{item.count}</div>
+                    <div className="expand-icon">{isExpanded ? '▲' : '▼'}</div>
+                  </div>
+                  {isExpanded && (
+                    <div className="pc-pattern-details">
+                      {details.spillEvents && (
+                        <div className="spill-events-list">
+                          <div className="detail-label" style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>First 5 Spill Events:</div>
+                          {details.spillEvents.map((event: any, index: number) => (
+                            <div key={index} className="spill-event-item" style={{ marginBottom: '0.5rem', padding: '0.5rem', background: 'var(--bg)', borderRadius: '4px', fontSize: '0.8rem' }}>
+                              <div><strong>Event {index + 1}:</strong></div>
+                              <div>Store PC: {event.store_pc} | Load PC: {event.load_pc}</div>
+                              <div>Memory: {event.memory_address}</div>
+                              <div>Ticks: {event.store_tick} → {event.load_tick} (diff: {event.tick_diff})</div>
+                              <div>Inst Count: {event.store_inst_count} → {event.load_inst_count}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="detail-row">
+                        <span className="detail-label">Operation Type:</span>
+                        <span className="detail-value">{details.type}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="pc-pattern-section">
+            <div className="pc-pattern-title">Top Load PCs</div>
+            {patterns.top_load_pcs.slice(0, 5).map((item, index) => {
+              const key = `load-${index}`;
+              const isExpanded = expandedItems[key];
+              const details = getSpillDetails(item.pc, item.count, 'load');
+              
+              return (
+                <div key={index}>
+                  <div 
+                    className={`pc-pattern-item ${getMedalClass(index)} ${isExpanded ? 'expanded' : ''}`}
+                    onClick={() => toggleExpanded(key)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="pc-pattern-rank">
+                      <span className="medal-icon">{getMedalIcon(index)}</span>
+                    </div>
+                    <div className="pc-pattern-pc">{item.pc}</div>
+                    <div className="pc-pattern-count">{item.count}</div>
+                    <div className="expand-icon">{isExpanded ? '▲' : '▼'}</div>
+                  </div>
+                  {isExpanded && (
+                    <div className="pc-pattern-details">
+                      {details.spillEvents && (
+                        <div className="spill-events-list">
+                          <div className="detail-label" style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>First 5 Spill Events:</div>
+                          {details.spillEvents.map((event: any, index: number) => (
+                            <div key={index} className="spill-event-item" style={{ marginBottom: '0.5rem', padding: '0.5rem', background: 'var(--bg)', borderRadius: '4px', fontSize: '0.8rem' }}>
+                              <div><strong>Event {index + 1}:</strong></div>
+                              <div>Store PC: {event.store_pc} | Load PC: {event.load_pc}</div>
+                              <div>Memory: {event.memory_address}</div>
+                              <div>Ticks: {event.store_tick} → {event.load_tick} (diff: {event.tick_diff})</div>
+                              <div>Inst Count: {event.store_inst_count} → {event.load_inst_count}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="detail-row">
+                        <span className="detail-label">Operation Type:</span>
+                        <span className="detail-value">{details.type}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+// Timeline Chart Component
+const TimelineChart: React.FC<{
+  title: string;
+  description: string;
+  data: Array<{
+    time_window: string;
+    count: number;
+    start_time: number;
+    end_time: number;
+  }>;
+  isDarkTheme: boolean;
+}> = ({ title, description, data, isDarkTheme }) => {
+  const maxCount = Math.max(...data.map(d => d.count));
+  
+  return (
+    <div className="chart-container">
+      <div className="chart-header">
+        <div>
+          <h4 className="chart-title">{title}</h4>
+          <p className="chart-description">{description}</p>
+        </div>
+      </div>
+      
+      <div className="timeline-chart">
+        {data.map((item, index) => (
+          <div key={index} className="timeline-item">
+            <div className="timeline-time">{item.time_window}</div>
+            <div className="timeline-bar-container">
+              <div 
+                className="timeline-bar-fill"
+                style={{ width: `${(item.count / maxCount) * 100}%` }}
+              />
+            </div>
+            <div className="timeline-count">{item.count}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Modern Performance Radar Chart Component
+const PerformanceRadarChart: React.FC<{
+  title: string;
+  description: string;
+  data: {
+    spill_count: number;
+    avg_duration: number;
+    unique_addresses: number;
+    performance_impact: number;
+    efficiency_score: number;
+  };
+  isDarkTheme: boolean;
+}> = ({ title, description, data, isDarkTheme }) => {
+  return (
+    <div className="chart-container">
+      <div className="chart-header">
+        <div>
+          <h4 className="chart-title">{title}</h4>
+          <p className="chart-description">{description}</p>
+        </div>
+      </div>
+      
+      <div className="performance-radar-container">
+        <div className="performance-radar">
+          <div className="performance-radar-center">
+            <div className="performance-radar-center-icon">⚡</div>
+            <div className="performance-radar-center-text">Performance</div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="performance-metrics-grid">
+        <div className="performance-metric-card">
+          <div className="performance-metric-icon">🔥</div>
+          <div className="performance-metric-title">Spill Count</div>
+          <div className="performance-metric-value">{formatNumber(data.spill_count)}</div>
+          <div className="performance-metric-description">Total spill events detected</div>
+        </div>
+        
+        <div className="performance-metric-card">
+          <div className="performance-metric-icon">⏱️</div>
+          <div className="performance-metric-title">Avg Duration</div>
+          <div className="performance-metric-value">{data.avg_duration.toFixed(0)}</div>
+          <div className="performance-metric-description">Average spill duration (ticks)</div>
+        </div>
+        
+        <div className="performance-metric-card">
+          <div className="performance-metric-icon">📍</div>
+          <div className="performance-metric-title">Unique Addresses</div>
+          <div className="performance-metric-value">{formatNumber(data.unique_addresses)}</div>
+          <div className="performance-metric-description">Distinct memory locations</div>
+        </div>
+        
+        <div className="performance-metric-card">
+          <div className="performance-metric-icon">📊</div>
+          <div className="performance-metric-title">Performance Impact</div>
+          <div className="performance-metric-value">{data.performance_impact.toFixed(1)}%</div>
+          <div className="performance-metric-description">Performance degradation</div>
+        </div>
+        
+        <div className="performance-metric-card">
+          <div className="performance-metric-icon">🎯</div>
+          <div className="performance-metric-title">Efficiency Score</div>
+          <div className="performance-metric-value">{data.efficiency_score.toFixed(1)}</div>
+          <div className="performance-metric-description">Overall efficiency rating</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Modern Donut Chart Component
+const ModernDonutChart: React.FC<{
+  title: string;
+  description: string;
+  data: { spill: number; normal: number; total: number };
+  isDarkTheme: boolean;
+}> = ({ title, description, data, isDarkTheme }) => {
+  const spillAngle = (data.spill / data.total) * 360;
+  const spillPercentage = ((data.spill / data.total) * 100).toFixed(1);
+  const normalPercentage = ((data.normal / data.total) * 100).toFixed(1);
+
+  return (
+    <div className="chart-container">
+      <div className="chart-header">
+        <div>
+          <h4 className="chart-title">{title}</h4>
+          <p className="chart-description">{description}</p>
+        </div>
+      </div>
+      
+      <div className="donut-chart-container">
+        <div 
+          className="donut-chart"
+          style={{ '--spill-angle': `${spillAngle}deg` } as React.CSSProperties}
+        >
+          <div className="donut-chart-center">
+            <div className="donut-chart-center-value">{spillPercentage}%</div>
+            <div className="donut-chart-center-label">Spill Impact</div>
+          </div>
+        </div>
+        
+        <div className="donut-chart-legend">
+          <div className="donut-chart-legend-item">
+            <div className="donut-chart-legend-color spill" />
+            <div>
+              <div>Spill Events</div>
+              <div className="donut-chart-legend-value">{formatNumber(data.spill)}</div>
+            </div>
+          </div>
+          <div className="donut-chart-legend-item">
+            <div className="donut-chart-legend-color normal" />
+            <div>
+              <div>Normal Events</div>
+              <div className="donut-chart-legend-value">{formatNumber(data.normal)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Heatmap Chart Component
+const HeatmapChart: React.FC<{
+  title: string;
+  description: string;
+  data: Array<{
+    range: string;
+    count: number;
+    percentage: number;
+    start: number;
+    end: number;
+  }>;
+  isDarkTheme: boolean;
+}> = ({ title, description, data, isDarkTheme }) => {
+  const maxCount = Math.max(...data.map(d => d.count));
+  
+  // Create a 10x10 grid for heatmap visualization
+  const gridData = Array.from({ length: 100 }, (_, index) => {
+    const dataIndex = Math.floor((index / 100) * data.length);
+    const item = data[dataIndex] || { count: 0, range: 'N/A' };
+    const intensity = item.count / maxCount;
+    
+    return {
+      intensity,
+      count: item.count,
+      range: item.range,
+      index
+    };
+  });
+
+  const getHeatmapColor = (intensity: number) => {
+    if (intensity === 0) return '#374151';
+    if (intensity < 0.2) return '#3b82f6';
+    if (intensity < 0.4) return '#10b981';
+    if (intensity < 0.6) return '#f59e0b';
+    if (intensity < 0.8) return '#ef4444';
+    return '#8b5cf6';
+  };
+
+  return (
+    <div className="chart-container">
+      <div className="chart-header">
+        <div>
+          <h4 className="chart-title">{title}</h4>
+          <p className="chart-description">{description}</p>
+        </div>
+      </div>
+      
+      <div className="heatmap-grid">
+        {gridData.map((cell) => (
+          <div
+            key={cell.index}
+            className="heatmap-cell"
+            style={{ 
+              backgroundColor: getHeatmapColor(cell.intensity),
+              opacity: cell.intensity > 0 ? 0.8 : 0.3
+            }}
+          >
+            <div className="heatmap-cell-tooltip">
+              {cell.range}: {cell.count} spills
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+        Heatmap showing spill distribution intensity across different ranges
+      </div>
+    </div>
+  );
+};
+
+// Spill Event Timeline Component
+const SpillEventTimeline: React.FC<{
+  title: string;
+  description: string;
+  data: Array<{
+    id: string;
+    duration: number;
+    memory_address: number;
+    pc: string;
+    load_pc?: string;
+    store_pc?: string;
+    impact_level: 'critical' | 'high-impact' | 'medium-impact' | 'low-impact' | 'normal';
+  }>;
+  isDarkTheme: boolean;
+}> = ({ title, description, data, isDarkTheme }) => {
+  const [hoveredPoint, setHoveredPoint] = React.useState<number | null>(null);
+  const [tooltipPosition, setTooltipPosition] = React.useState({ x: 0, y: 0 });
+
+  // Sort data by time and create timeline
+  const sortedData = [...data].sort((a, b) => a.duration - b.duration);
+  const minTime = 0; // Always start from 0
+  const maxTime = 1000; // Always end at 1000
+  const timeRange = maxTime - minTime;
+
+  // Scale data to canvas coordinates (420px width, 420px height after padding)
+  const scaleX = (value: number) => {
+    return ((value - minTime) / timeRange) * 420;
+  };
+
+  const scaleY = (value: number) => {
+    return 420 - ((value / data.length) * 420); // Invert Y for timeline
+  };
+
+  // Group spills by time intervals for line chart
+  const timeIntervals = 20;
+  const timeStep = 1000 / timeIntervals;
+  const spillCounts = Array.from({ length: timeIntervals }, (_, i) => {
+    const startTime = i * timeStep;
+    const endTime = (i + 1) * timeStep;
+    return data.filter(d => d.duration >= startTime && d.duration < endTime).length;
+  });
+  const maxSpills = Math.max(...spillCounts);
+
+  const handlePointHover = (index: number, event: React.MouseEvent) => {
+    setHoveredPoint(index);
+    const rect = event.currentTarget.getBoundingClientRect();
+    setTooltipPosition({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    });
+  };
+
+  const handlePointLeave = () => {
+    setHoveredPoint(null);
+  };
+
+  // Generate grid lines for timeline
+  const gridLines = [];
+  for (let i = 0; i <= 10; i++) {
+    const x = (i / 10) * 420;
+    const y = (i / 10) * 420;
+    
+    gridLines.push(
+      <div
+        key={`v-${i}`}
+        className="scatter-plot-grid-line vertical"
+        style={{ left: `${x}px` }}
+      />
+    );
+    gridLines.push(
+      <div
+        key={`h-${i}`}
+        className="scatter-plot-grid-line horizontal"
+        style={{ top: `${y}px` }}
+      />
+    );
+  }
+
+  // Generate axis ticks for timeline
+  const xTicks = [];
+  const yTicks = [];
+  
+  // X-axis: 10 ticks for time
+  for (let i = 0; i <= 10; i++) {
+    const xValue = minTime + (i / 10) * timeRange;
+    
+    xTicks.push(
+      <div key={i} className="scatter-plot-axis-tick">
+        {Math.round(xValue).toLocaleString()}
+      </div>
+    );
+  }
+  
+  // Y-axis: 10 ticks for spill count
+  for (let i = 0; i <= 10; i++) {
+    const yValue = Math.round((i / 10) * maxSpills);
+    const y = (i / 10) * 420;
+    
+    yTicks.push(
+      <div 
+        key={i} 
+        className="scatter-plot-axis-tick"
+        style={{ 
+          top: `${y}px`
+        }}
+      >
+        {yValue}
+      </div>
+    );
+  }
+
+  return (
+    <div className="chart-container">
+      <div className="chart-header">
+        <div>
+          <h4 className="chart-title">{title}</h4>
+          <p className="chart-description">{description}</p>
+        </div>
+      </div>
+      
+      <div className="scatter-plot-modern">
+        <div className="scatter-plot-canvas">
+          {/* Grid */}
+          <div className="scatter-plot-grid">
+            {gridLines}
+          </div>
+          
+          {/* Y-axis */}
+          <div className="scatter-plot-y-axis">
+            <div className="scatter-plot-axis-label" style={{ transform: 'rotate(-90deg)' }}>
+              Spill Count
+            </div>
+            {yTicks}
+          </div>
+          
+          {/* Line Chart */}
+          <div className="scatter-plot-points">
+            <svg width="420" height="420" style={{ position: 'absolute', top: 0, left: 0 }}>
+              <polyline
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="3"
+                points={spillCounts.map((count, i) => 
+                  `${scaleX(i * timeStep + timeStep/2)},${420 - ((count / maxSpills) * 420)}`
+                ).join(' ')}
+              />
+              {spillCounts.map((count, i) => (
+                <circle
+                  key={i}
+                  cx={scaleX(i * timeStep + timeStep/2)}
+                  cy={420 - ((count / maxSpills) * 420)}
+                  r="4"
+                  fill="#3b82f6"
+                  onMouseEnter={(e) => handlePointHover(i, e)}
+                  onMouseLeave={handlePointLeave}
+                />
+              ))}
+            </svg>
+          </div>
+          
+          {/* X-axis */}
+          <div className="scatter-plot-axes">
+            <div className="scatter-plot-axis-label">Time (normalized)</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+              {xTicks}
+            </div>
+          </div>
+          
+          {/* Tooltip */}
+          {hoveredPoint !== null && (
+            <div
+              className={`scatter-plot-tooltip show`}
+              style={{
+                left: `${tooltipPosition.x + 10}px`,
+                top: `${tooltipPosition.y - 10}px`
+              }}
+            >
+              <div className="scatter-plot-tooltip-title">
+                Time Interval {hoveredPoint + 1}
+              </div>
+              <div className="scatter-plot-tooltip-content">
+                <div className="scatter-plot-tooltip-row">
+                  <span className="scatter-plot-tooltip-label">Time:</span>
+                  <span className="scatter-plot-tooltip-value">{((hoveredPoint * timeStep) + (timeStep/2)).toFixed(0)} - {(((hoveredPoint + 1) * timeStep) + (timeStep/2)).toFixed(0)}</span>
+                </div>
+                <div className="scatter-plot-tooltip-row">
+                  <span className="scatter-plot-tooltip-label">Spill Count:</span>
+                  <span className="scatter-plot-tooltip-value">{spillCounts[hoveredPoint]}</span>
+                </div>
+                <div className="scatter-plot-tooltip-row">
+                  <span className="scatter-plot-tooltip-label">Max Spills:</span>
+                  <span className="scatter-plot-tooltip-value">{maxSpills}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+      </div>
+    </div>
+  );
+};
+
+// Spill Events Search Section Component
+const SpillEventsSearchSection: React.FC<{
+  title: string;
+  description: string;
+  data: Array<{
+    id: string;
+    duration: number;
+    memory_address: number;
+    pc: string;
+    load_pc?: string;
+    store_pc?: string;
+    impact_level: 'critical' | 'high-impact' | 'medium-impact' | 'low-impact' | 'normal';
+  }>;
+  isDarkTheme: boolean;
+}> = ({ title, description, data, isDarkTheme }) => {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [searchField, setSearchField] = React.useState<'all' | 'id' | 'pc' | 'load_pc' | 'store_pc' | 'memory_address' | 'duration'>('all');
+
+  const filteredData = data.filter(item => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Wildcard search - if search term contains *, use it as wildcard
+    if (searchTerm.includes('*')) {
+      const pattern = searchTerm.replace(/\*/g, '.*').toLowerCase();
+      
+      if (searchField === 'all') {
+        return new RegExp(pattern).test(item.id.toLowerCase()) || 
+               new RegExp(pattern).test(item.pc.toLowerCase()) || 
+               new RegExp(pattern).test(item.load_pc?.toLowerCase() || '') || 
+               new RegExp(pattern).test(item.store_pc?.toLowerCase() || '') ||
+               new RegExp(pattern).test(item.memory_address.toString().toLowerCase()) || 
+               new RegExp(pattern).test(item.duration.toString().toLowerCase());
+      } else if (searchField === 'id') {
+        return new RegExp(pattern).test(item.id.toLowerCase());
+      } else if (searchField === 'pc') {
+        return new RegExp(pattern).test(item.pc.toLowerCase());
+      } else if (searchField === 'load_pc') {
+        return new RegExp(pattern).test(item.load_pc?.toLowerCase() || '');
+      } else if (searchField === 'store_pc') {
+        return new RegExp(pattern).test(item.store_pc?.toLowerCase() || '');
+      } else if (searchField === 'memory_address') {
+        return new RegExp(pattern).test(item.memory_address.toString().toLowerCase());
+      } else if (searchField === 'duration') {
+        return new RegExp(pattern).test(item.duration.toString().toLowerCase());
+      }
+    }
+    
+    // Normal search
+    if (searchField === 'all') {
+      return item.id.toLowerCase().includes(searchLower) || 
+             item.pc.toLowerCase().includes(searchLower) || 
+             item.load_pc?.toLowerCase().includes(searchLower) || 
+             item.store_pc?.toLowerCase().includes(searchLower) ||
+             item.memory_address.toString().toLowerCase().includes(searchLower) || 
+             item.duration.toString().toLowerCase().includes(searchLower);
+    } else if (searchField === 'id') {
+      return item.id.toLowerCase().includes(searchLower);
+    } else if (searchField === 'pc') {
+      return item.pc.toLowerCase().includes(searchLower);
+    } else if (searchField === 'load_pc') {
+      return item.load_pc?.toLowerCase().includes(searchLower) || false;
+    } else if (searchField === 'store_pc') {
+      return item.store_pc?.toLowerCase().includes(searchLower) || false;
+    } else if (searchField === 'memory_address') {
+      return item.memory_address.toString().toLowerCase().includes(searchLower);
+    } else if (searchField === 'duration') {
+      return item.duration.toString().toLowerCase().includes(searchLower);
+    }
+    
+    return true;
+  });
+
+  return (
+    <div className="spill-search-section">
+      <div className="spill-search-header">
+        <div className="spill-search-title">
+          <h4>🔍 {title}</h4>
+          <p>{description}</p>
+        </div>
+        <div className="spill-search-stats">
+          <span className="search-stats">
+            {filteredData.length} of {data.length} events
+          </span>
+        </div>
+      </div>
+      
+      <div className="spill-search-controls">
+        <div className="search-controls-row">
+          <div className="search-field-group">
+            <label htmlFor="search-field">Search in:</label>
+            <select 
+              id="search-field"
+              value={searchField} 
+              onChange={(e) => setSearchField(e.target.value as any)}
+              className="spill-field-select"
+            >
+              <option value="all">All Fields</option>
+              <option value="id">ID Only</option>
+              <option value="pc">PC Only</option>
+              <option value="load_pc">Load PC Only</option>
+              <option value="store_pc">Store PC Only</option>
+              <option value="memory_address">Memory Address Only</option>
+              <option value="duration">Time Only</option>
+            </select>
+          </div>
+          
+          <div className="search-input-group">
+            <label htmlFor="search-input">Search term:</label>
+            <input
+              id="search-input"
+              type="text"
+              placeholder={`Search ${searchField === 'all' ? 'all fields' : searchField} (use * for wildcard)`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="spill-search-input"
+            />
+          </div>
+          
+          <div className="search-actions">
+            <button 
+              onClick={() => {
+                setSearchTerm('');
+                setSearchField('all');
+              }}
+              className="clear-search-btn"
+              title="Clear search"
+            >
+              🗑️ Clear
+            </button>
+            <button 
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="toggle-results-btn"
+            >
+              {isExpanded ? '▼ Hide Results' : '▶ Show Results'}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {isExpanded && (
+        <div className="spill-search-results">
+          <div className="results-header">
+            <h5>Search Results ({filteredData.length} events)</h5>
+            {searchTerm && (
+              <div className="search-info">
+                <span className="search-term">Searching for: "{searchTerm}"</span>
+                <span className="search-field">in: {searchField === 'all' ? 'All Fields' : searchField}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="spill-events-grid">
+            {filteredData.map((event, index) => (
+              <div key={index} className="spill-event-item">
+                <div className="spill-event-header">
+                  <span className="spill-event-index">#{event.id}</span>
+                </div>
+                <div className="spill-event-details">
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Time:</span>
+                    <span className="detail-value">{event.duration.toFixed(3)}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">PC:</span>
+                    <span className="detail-value">{event.pc}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Load PC:</span>
+                    <span className="detail-value">{event.load_pc || 'N/A'}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Store PC:</span>
+                    <span className="detail-value">{event.store_pc || 'N/A'}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Memory:</span>
+                    <span className="detail-value">{event.memory_address}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Spill Events List Component
+const SpillEventsList: React.FC<{
+  data: Array<{
+    id: string;
+    duration: number;
+    memory_address: number;
+    pc: string;
+    load_pc?: string;
+    store_pc?: string;
+    impact_level: 'critical' | 'high-impact' | 'medium-impact' | 'low-impact' | 'normal';
+  }>;
+  isDarkTheme: boolean;
+}> = ({ data, isDarkTheme }) => {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [searchField, setSearchField] = React.useState<'all' | 'id' | 'pc' | 'load_pc' | 'store_pc' | 'memory_address' | 'duration'>('all');
+
+  const filteredData = data.filter(item => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Wildcard search - if search term contains *, use it as wildcard
+    if (searchTerm.includes('*')) {
+      const pattern = searchTerm.replace(/\*/g, '.*').toLowerCase();
+      
+      if (searchField === 'all') {
+        return new RegExp(pattern).test(item.id.toLowerCase()) || 
+               new RegExp(pattern).test(item.pc.toLowerCase()) || 
+               new RegExp(pattern).test(item.load_pc?.toLowerCase() || '') || 
+               new RegExp(pattern).test(item.store_pc?.toLowerCase() || '') ||
+               new RegExp(pattern).test(item.memory_address.toString().toLowerCase()) || 
+               new RegExp(pattern).test(item.duration.toString().toLowerCase());
+      } else if (searchField === 'id') {
+        return new RegExp(pattern).test(item.id.toLowerCase());
+      } else if (searchField === 'pc') {
+        return new RegExp(pattern).test(item.pc.toLowerCase());
+      } else if (searchField === 'load_pc') {
+        return new RegExp(pattern).test(item.load_pc?.toLowerCase() || '');
+      } else if (searchField === 'store_pc') {
+        return new RegExp(pattern).test(item.store_pc?.toLowerCase() || '');
+      } else if (searchField === 'memory_address') {
+        return new RegExp(pattern).test(item.memory_address.toString().toLowerCase());
+      } else if (searchField === 'duration') {
+        return new RegExp(pattern).test(item.duration.toString().toLowerCase());
+      }
+    }
+    
+    // Normal search
+    if (searchField === 'all') {
+      return item.id.toLowerCase().includes(searchLower) || 
+             item.pc.toLowerCase().includes(searchLower) || 
+             item.load_pc?.toLowerCase().includes(searchLower) || 
+             item.store_pc?.toLowerCase().includes(searchLower) ||
+             item.memory_address.toString().toLowerCase().includes(searchLower) || 
+             item.duration.toString().toLowerCase().includes(searchLower);
+    } else if (searchField === 'id') {
+      return item.id.toLowerCase().includes(searchLower);
+    } else if (searchField === 'pc') {
+      return item.pc.toLowerCase().includes(searchLower);
+    } else if (searchField === 'load_pc') {
+      return item.load_pc?.toLowerCase().includes(searchLower) || false;
+    } else if (searchField === 'store_pc') {
+      return item.store_pc?.toLowerCase().includes(searchLower) || false;
+    } else if (searchField === 'memory_address') {
+      return item.memory_address.toString().toLowerCase().includes(searchLower);
+    } else if (searchField === 'duration') {
+      return item.duration.toString().toLowerCase().includes(searchLower);
+    }
+    
+    return true;
+  });
+
+  return (
+    <div className="spill-events-list-container">
+      <div className="spill-events-header">
+        <h4>Spill Events List ({filteredData.length} of {data.length} total)</h4>
+        <div className="spill-events-controls">
+          <select 
+            value={searchField} 
+            onChange={(e) => setSearchField(e.target.value as any)}
+            className="spill-field-select"
+          >
+            <option value="all">All Fields</option>
+            <option value="id">ID Only</option>
+            <option value="pc">PC Only</option>
+            <option value="load_pc">Load PC Only</option>
+            <option value="store_pc">Store PC Only</option>
+            <option value="memory_address">Memory Address Only</option>
+            <option value="duration">Time Only</option>
+          </select>
+          <input
+            type="text"
+            placeholder={`Search ${searchField === 'all' ? 'all fields' : searchField} (use * for wildcard)`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="spill-search-input"
+          />
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="spill-toggle-btn"
+          >
+            {isExpanded ? '▼ Hide' : '▶ Show'} Events
+          </button>
+        </div>
+      </div>
+      
+      {isExpanded && (
+        <div className="spill-events-content">
+          <div className="spill-events-grid">
+            {filteredData.map((event, index) => (
+              <div key={index} className="spill-event-item">
+                <div className="spill-event-header">
+                  <span className="spill-event-index">#{event.id}</span>
+                </div>
+                <div className="spill-event-details">
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Time:</span>
+                    <span className="detail-value">{event.duration.toFixed(3)}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">PC:</span>
+                    <span className="detail-value">{event.pc}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Load PC:</span>
+                    <span className="detail-value">{event.load_pc || 'N/A'}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Store PC:</span>
+                    <span className="detail-value">{event.store_pc || 'N/A'}</span>
+                  </div>
+                  <div className="spill-event-detail">
+                    <span className="detail-label">Memory:</span>
+                    <span className="detail-value">{event.memory_address}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+  const SpillPieChart: React.FC<{ 
+    title: string; 
+    description: string; 
+    data: { spill: number; normal: number; total: number }; 
+    isDarkTheme: boolean 
+  }> = ({ title, description, data, isDarkTheme }) => {
+    const spillAngle = (data.spill / data.total) * 360;
+    const spillPercentage = ((data.spill / data.total) * 100).toFixed(1);
+    const normalPercentage = ((data.normal / data.total) * 100).toFixed(1);
+
+    return (
+      <div className="chart-container">
+        <div className="chart-header">
+          <div>
+            <h4 className="chart-title">{title}</h4>
+            <p className="chart-description">{description}</p>
+          </div>
+        </div>
+        
+        <div className="pie-chart-container">
+          <div className="pie-chart">
+            <div 
+              className="pie-segment spill" 
+              style={{ '--spill-angle': `${spillAngle}deg` } as React.CSSProperties}
+            />
+            <div 
+              className="pie-segment normal" 
+              style={{ '--spill-angle': `${spillAngle}deg` } as React.CSSProperties}
+            />
+          </div>
+          
+          <div className="pie-legend">
+            <div className="pie-legend-item">
+              <div className="pie-legend-color spill" />
+              <div>
+                <div>Spill</div>
+                <div className="pie-value">{formatNumber(data.spill)}</div>
+                <div>{spillPercentage}%</div>
+              </div>
+            </div>
+            <div className="pie-legend-item">
+              <div className="pie-legend-color normal" />
+              <div>
+                <div>Normal</div>
+                <div className="pie-value">{formatNumber(data.normal)}</div>
+                <div>{normalPercentage}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Spill Bar Chart Component
+  const SpillBarChart: React.FC<{ 
+    title: string; 
+    description: string; 
+    data: { spill: number; normal: number; total: number }; 
+    isDarkTheme: boolean 
+  }> = ({ title, description, data, isDarkTheme }) => {
+    const spillPercentage = ((data.spill / data.total) * 100).toFixed(1);
+    const normalPercentage = ((data.normal / data.total) * 100).toFixed(1);
+    const maxValue = Math.max(data.spill, data.normal);
+    
+    const spillHeight = (data.spill / maxValue) * 100;
+    const normalHeight = (data.normal / maxValue) * 100;
+
+    return (
+      <div className="chart-container">
+        <div className="chart-header">
+          <div>
+            <h4 className="chart-title">{title}</h4>
+            <p className="chart-description">{description}</p>
+          </div>
+        </div>
+        
+        <div className="bar-chart-container">
+          <div className="bar-chart">
+            <div className="bar-item">
+              <div 
+                className="bar spill" 
+                style={{ height: `${spillHeight}%` }}
+              />
+              <div className="bar-label">Spill CPI</div>
+              <div className="bar-value">{data.spill.toFixed(2)}</div>
+              <div className="bar-percentage">{spillPercentage}%</div>
+            </div>
+            <div className="bar-item">
+              <div 
+                className="bar normal" 
+                style={{ height: `${normalHeight}%` }}
+              />
+              <div className="bar-label">Normal CPI</div>
+              <div className="bar-value">{data.normal.toFixed(2)}</div>
+              <div className="bar-percentage">{normalPercentage}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -740,88 +2104,6 @@ function App() {
                    </div>
                  </div>
                  
-                 {/* Memory System Heatmap */}
-                 <div className="memory-heatmap-container">
-                   <h3>🔥 Memory System Heatmap</h3>
-                   <div className="memory-heatmap">
-                     <div className="heatmap-row">
-                       <div className="heatmap-cell heatmap-header">Metric</div>
-                       <div className="heatmap-cell heatmap-header">Value</div>
-                       <div className="heatmap-cell heatmap-header">Status</div>
-                       <div className="heatmap-cell heatmap-header">Heat</div>
-                     </div>
-                     
-                     <div className="heatmap-row">
-                       <div className="heatmap-cell">Memory Intensity</div>
-                       <div className="heatmap-cell">{efficiencyMetrics.memory_intensity}%</div>
-                       <div className="heatmap-cell">
-                         {efficiencyMetrics.memory_intensity > 30 ? 'High' : efficiencyMetrics.memory_intensity > 20 ? 'Medium' : 'Low'}
-                       </div>
-                       <div className="heatmap-cell">
-                         <div className="heatmap-bar" style={{
-                           width: `${Math.min(efficiencyMetrics.memory_intensity * 2, 100)}%`,
-                           backgroundColor: efficiencyMetrics.memory_intensity > 30 ? '#ef4444' : efficiencyMetrics.memory_intensity > 20 ? '#f59e0b' : '#10b981'
-                         }}></div>
-                       </div>
-                     </div>
-                     
-                     <div className="heatmap-row">
-                       <div className="heatmap-cell">Read/Write Ratio</div>
-                       <div className="heatmap-cell">{efficiencyMetrics.read_write_ratio}:1</div>
-                       <div className="heatmap-cell">
-                         {efficiencyMetrics.read_write_ratio > 10 ? 'Read-Heavy' : efficiencyMetrics.read_write_ratio > 5 ? 'Balanced' : 'Write-Heavy'}
-                       </div>
-                       <div className="heatmap-cell">
-                         <div className="heatmap-bar" style={{
-                           width: `${Math.min(efficiencyMetrics.read_write_ratio * 5, 100)}%`,
-                           backgroundColor: efficiencyMetrics.read_write_ratio > 10 ? '#10b981' : efficiencyMetrics.read_write_ratio > 5 ? '#f59e0b' : '#ef4444'
-                         }}></div>
-                       </div>
-                     </div>
-                     
-                     <div className="heatmap-row">
-                       <div className="heatmap-cell">Memory Bandwidth</div>
-                       <div className="heatmap-cell">{efficiencyMetrics.memory_bandwidth_mbps} MB/s</div>
-                       <div className="heatmap-cell">
-                         {efficiencyMetrics.memory_bandwidth_mbps > 50 ? 'High' : efficiencyMetrics.memory_bandwidth_mbps > 20 ? 'Medium' : 'Low'}
-                       </div>
-                       <div className="heatmap-cell">
-                         <div className="heatmap-bar" style={{
-                           width: `${Math.min(efficiencyMetrics.memory_bandwidth_mbps * 2, 100)}%`,
-                           backgroundColor: efficiencyMetrics.memory_bandwidth_mbps > 50 ? '#10b981' : efficiencyMetrics.memory_bandwidth_mbps > 20 ? '#f59e0b' : '#ef4444'
-                         }}></div>
-                       </div>
-                     </div>
-                     
-                     <div className="heatmap-row">
-                       <div className="heatmap-cell">Write Queue</div>
-                       <div className="heatmap-cell">{efficiencyMetrics.avg_write_queue_length}</div>
-                       <div className="heatmap-cell">
-                         {efficiencyMetrics.avg_write_queue_length > 20 ? 'Congested' : efficiencyMetrics.avg_write_queue_length > 10 ? 'Moderate' : 'Clear'}
-                       </div>
-                       <div className="heatmap-cell">
-                         <div className="heatmap-bar" style={{
-                           width: `${Math.min(efficiencyMetrics.avg_write_queue_length * 3, 100)}%`,
-                           backgroundColor: efficiencyMetrics.avg_write_queue_length > 20 ? '#ef4444' : efficiencyMetrics.avg_write_queue_length > 10 ? '#f59e0b' : '#10b981'
-                         }}></div>
-                       </div>
-                     </div>
-                     
-                     <div className="heatmap-row">
-                       <div className="heatmap-cell">Read Queue</div>
-                       <div className="heatmap-cell">{efficiencyMetrics.avg_read_queue_length}</div>
-                       <div className="heatmap-cell">
-                         {efficiencyMetrics.avg_read_queue_length > 5 ? 'Congested' : efficiencyMetrics.avg_read_queue_length > 2 ? 'Moderate' : 'Clear'}
-                       </div>
-                       <div className="heatmap-cell">
-                         <div className="heatmap-bar" style={{
-                           width: `${Math.min(efficiencyMetrics.avg_read_queue_length * 20, 100)}%`,
-                           backgroundColor: efficiencyMetrics.avg_read_queue_length > 5 ? '#ef4444' : efficiencyMetrics.avg_read_queue_length > 2 ? '#f59e0b' : '#10b981'
-                         }}></div>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
                </div>
              )}
              
@@ -923,6 +2205,130 @@ function App() {
              )}
            </main>
          </div>
+
+         {/* Spill Analysis Section */}
+         {spillAnalysis && spillAnalysis.spill_count > 0 && (
+           <div className="content-section">
+             <header className="App-header">
+               <h1>💧 Register Spill Analysis</h1>
+               <p>Detailed analysis of register spill patterns and memory usage</p>
+               <div className="architecture-info">
+                 <span className="architecture-badge">
+                   🏗️ {spillAnalysis.architecture} Architecture
+                 </span>
+                 <span className="file-info">
+                   📄 {spillAnalysis.spill_file}
+                 </span>
+               </div>
+             </header>
+             
+             <main className="container">
+               {/* Spill Statistics */}
+               <div className="metrics-grid">
+                 <div className="metric-card cpi-card">
+                   <div className="metric-header">
+                     <h3>Total Spills</h3>
+                   </div>
+                   <div className="metric-value">
+                     {formatNumber(spillAnalysis.statistics.total_spills)}
+                   </div>
+                   <div className="metric-full">
+                     {spillAnalysis.statistics.total_spills.toLocaleString()}
+                   </div>
+                 </div>
+                 
+                 <div className="metric-card host-time-card">
+                   <div className="metric-header">
+                     <h3>Avg Duration</h3>
+                   </div>
+                   <div className="metric-value">
+                     {formatNumber(spillAnalysis.statistics.avg_spill_duration)}
+                   </div>
+                   <div className="metric-full">
+                     {spillAnalysis.statistics.avg_spill_duration.toFixed(0)} ticks
+                   </div>
+                 </div>
+                 
+                 <div className="metric-card sim-time-card">
+                   <div className="metric-header">
+                     <h3>Unique Addresses</h3>
+                   </div>
+                   <div className="metric-value">
+                     {formatNumber(spillAnalysis.statistics.unique_memory_addresses)}
+                   </div>
+                   <div className="metric-full">
+                     {spillAnalysis.statistics.unique_memory_addresses.toLocaleString()}
+                   </div>
+                 </div>
+                 
+                 <div className="metric-card tick-rate-card">
+                   <div className="metric-header">
+                     <h3>Max Duration</h3>
+                   </div>
+                   <div className="metric-value">
+                     {formatNumber(spillAnalysis.statistics.max_spill_duration)}
+                   </div>
+                   <div className="metric-full">
+                     {spillAnalysis.statistics.max_spill_duration.toLocaleString()} ticks
+                   </div>
+                 </div>
+               </div>
+               
+        {/* Modern Performance-Style Spill Analysis */}
+        {spillAnalysis.charts && (
+          <div className="chart-section">
+            <h3>⚡ Performance Impact Analysis</h3>
+            
+            
+            {/* Modern Donut Chart */}
+            <ModernDonutChart
+              title="Spill Impact Distribution"
+              description="Visual representation of spill vs normal operations"
+              data={{
+                spill: spillAnalysis.statistics.total_spills,
+                normal: 50000, // Estimated normal operations
+                total: spillAnalysis.statistics.total_spills + 50000
+              }}
+              isDarkTheme={isDarkTheme}
+            />
+            
+            
+            {/* PC Pattern Analysis */}
+            <div style={{ position: 'relative' }}>
+              <ConfettiEffect />
+              <PCPatternChart
+                title="Hotspot Analysis"
+                description="Most frequent spill locations (Program Counters)"
+                patterns={spillAnalysis.charts.pc_pattern_analysis.patterns}
+                isDarkTheme={isDarkTheme}
+              />
+            </div>
+            
+            {/* Spill Event Timeline */}
+            {spillAnalysis.charts.scatter_plot_data && (
+              <SpillEventTimeline
+                title="Spill Event Timeline Analysis"
+                description="Spill events over time"
+                data={spillAnalysis.charts.scatter_plot_data.data}
+                isDarkTheme={isDarkTheme}
+              />
+            )}
+            
+            {/* Spill Events Search & Filter Section */}
+            {spillAnalysis.charts.scatter_plot_data && (
+              <SpillEventsSearchSection
+                title="Spill Events Search & Filter"
+                description="Search and filter spill events with advanced options"
+                data={spillAnalysis.charts.scatter_plot_data.data}
+                isDarkTheme={isDarkTheme}
+              />
+            )}
+          </div>
+        )}
+              
+            </main>
+           </div>
+         )}
 
          {/* Third Section - Register Usage Analysis */}
          <div className="content-section">

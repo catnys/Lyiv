@@ -1065,7 +1065,6 @@ class SimpleGem5Reader:
                 },
                 'charts': {}
             }
-    def _generate_detailed_charts(self, spill_events, total_instructions, total_cycles):
         """Generate detailed chart data for meaningful visualizations"""
         if not spill_events:
             return {}
@@ -1087,9 +1086,6 @@ class SimpleGem5Reader:
         
         # 5. Timeline Analysis (Spill distribution over time)
         timeline_data = self._analyze_spill_timeline(spill_events)
-        
-        # Generate scatter plot data
-        scatter_data = self._generate_scatter_plot_data(spill_events)
         
         return {
             'spill_duration_distribution': {
@@ -1127,71 +1123,8 @@ class SimpleGem5Reader:
                 'description': 'Spill distribution over simulation time',
                 'data': timeline_data,
                 'total_time_span': max([event['load_tick'] for event in spill_events]) - min([event['store_tick'] for event in spill_events])
-            },
-            'scatter_plot_data': {
-                'title': 'Spill Impact Scatter Plot',
-                'description': 'Spill duration vs memory address with impact levels',
-                'data': scatter_data,
-                'total_points': len(scatter_data)
             }
         }
-    
-    def _generate_scatter_plot_data(self, spill_events):
-        """Generate scatter plot data with impact levels"""
-        if not spill_events:
-            return []
-        
-        scatter_data = []
-        durations = [event['tick_diff'] for event in spill_events]
-        avg_duration = sum(durations) / len(durations)
-        max_duration = max(durations)
-        
-        # Get time range for normalization
-        store_times = [event['store_tick'] for event in spill_events]
-        min_time = min(store_times)
-        max_time = max(store_times)
-        
-        for i, event in enumerate(spill_events):
-            duration = event['tick_diff']
-            store_time = event['store_tick']
-            
-            # Normalize time to 0-1000 range for better visualization
-            normalized_time = ((store_time - min_time) / (max_time - min_time)) * 1000
-            
-            # Determine impact level based on duration and other factors
-            if duration > max_duration * 0.8:
-                impact_level = 'critical'
-            elif duration > avg_duration * 1.5:
-                impact_level = 'high-impact'
-            elif duration > avg_duration:
-                impact_level = 'medium-impact'
-            elif duration > avg_duration * 0.5:
-                impact_level = 'low-impact'
-            else:
-                impact_level = 'normal'
-            
-            # Spread spill events more evenly across Y-axis with larger spacing
-            # Use modulo to create multiple "rows" of events with more space
-            y_position = (i % 10) * 100 + (i // 10) * 5
-            
-            scatter_data.append({
-                'id': f"{i+1:09d}",  # Unique ID starting from 000000001
-                'duration': normalized_time,  # X-axis: time
-                'memory_address': y_position,  # Y-axis: spread spill event index
-                'pc': event['store_pc'],
-                'load_pc': event['load_pc'],
-                'store_pc': event['store_pc'],
-                'impact_level': impact_level,
-                'store_tick': store_time,
-                'tick_diff': duration
-            })
-        
-        # Return all spill events (no sampling)
-        # if len(scatter_data) > 1000:
-        #     import random
-        #     scatter_data = random.sample(scatter_data, 1000)
-        
-        return scatter_data
     
     def _create_histogram_buckets(self, data, num_buckets):
         """Create histogram buckets for data visualization"""

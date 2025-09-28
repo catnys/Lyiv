@@ -26,13 +26,13 @@ def create_app():
     app = Flask(__name__)
     
     # Enable CORS for React frontend
-    CORS(app, origins=['http://localhost:3000'])
+    CORS(app, origins=['http://localhost:8080'])
     
     # Register simple API blueprint
     app.register_blueprint(simple_api_bp)
     
     # Initialize simple reader
-    m5out_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'm5out')
+    m5out_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'm5out')
     simple_reader = SimpleGem5Reader(m5out_path)
     
     # Load data on startup
@@ -60,7 +60,7 @@ def create_app():
                 "basic_metrics": "/api/basic-metrics",
                 "status": "/api/status"
             },
-            "frontend": "http://localhost:3000"
+            "frontend": "http://localhost:8080"
         })
     
     # Error handlers
@@ -88,12 +88,12 @@ app = create_app()
 if __name__ == '__main__':
     # Run the application
     logger.info("🚀 Starting Simple Flask server...")
-    logger.info("📊 Backend API: http://localhost:5002")
-    logger.info("🎨 Frontend: http://localhost:3000")
+    logger.info("📊 Backend API: http://localhost:5050")
+    logger.info("🎨 Frontend: http://localhost:8080")
     
     app.run(
         debug=True,
         host='0.0.0.0',
-        port=5002,
+        port=5050,
         threaded=True
     )

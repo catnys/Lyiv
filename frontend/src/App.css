@@ -570,6 +570,593 @@
 }
 
 
+/* Architecture Info Styles */
+.architecture-info {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.architecture-badge {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.file-info {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+/* Dark theme adjustments for architecture info */
+.dark-theme .architecture-badge {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(29, 78, 216, 0.15));
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--dark-text);
+}
+
+.dark-theme .file-info {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--dark-text);
+}
+
+/* Chart Styles */
+.chart-section {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px var(--shadow);
+}
+
+.chart-section h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--text);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.chart-container {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(59, 130, 246, 0.4), 
+    transparent);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.chart-header > div {
+  width: 100%;
+}
+
+.chart-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.chart-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0 0;
+  font-style: italic;
+}
+
+/* Pie Chart Styles */
+.pie-chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  position: relative;
+}
+
+.pie-chart {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.pie-segment {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%);
+  transform-origin: 50% 50%;
+}
+
+.pie-segment.spill {
+  background: conic-gradient(from 0deg, #ef4444 0deg, #ef4444 var(--spill-angle, 0deg), transparent var(--spill-angle, 0deg));
+}
+
+.pie-segment.normal {
+  background: conic-gradient(from var(--spill-angle, 0deg), #10b981 var(--spill-angle, 0deg), #10b981 360deg);
+}
+
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-left: 2rem;
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.pie-legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.pie-legend-color.spill {
+  background: #ef4444;
+}
+
+.pie-legend-color.normal {
+  background: #10b981;
+}
+
+.pie-value {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Bar Chart Styles */
+.bar-chart-container {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: end;
+  height: 200px;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 20px;
+}
+
+.bar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.bar.spill {
+  background: linear-gradient(to top, #ef4444, #dc2626);
+}
+
+.bar.normal {
+  background: linear-gradient(to top, #10b981, #059669);
+}
+
+.bar-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+.bar-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: center;
+}
+
+.bar-percentage {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Performance Loss Indicator */
+.performance-loss {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+}
+
+.performance-loss-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ef4444;
+  margin-bottom: 0.5rem;
+}
+
+.performance-loss-label {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+/* Dark theme adjustments for charts */
+.dark-theme .chart-container {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .pie-legend-item {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+  color: var(--dark-text);
+}
+
+.dark-theme .pie-legend-color {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme .bar-label,
+.dark-theme .bar-value {
+  color: var(--dark-text);
+}
+
+.dark-theme .performance-loss {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15));
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.dark-theme .performance-loss-label {
+  color: var(--dark-text);
+}
+
+/* Scatter Plot Styles */
+.scatter-plot-section {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px var(--shadow);
+}
+
+.scatter-plot-section h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--text);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.scatter-plot-container {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.scatter-plot-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(59, 130, 246, 0.4), 
+    transparent);
+}
+
+.scatter-plot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.scatter-plot-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.scatter-plot-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0 0;
+  font-style: italic;
+}
+
+.scatter-plot-canvas {
+  width: 100%;
+  height: 400px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.scatter-plot-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.scatter-plot-point {
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.scatter-plot-point:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.scatter-plot-tooltip {
+  position: absolute;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text);
+  box-shadow: 0 4px 12px var(--shadow);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.scatter-plot-tooltip.show {
+  opacity: 1;
+}
+
+.scatter-plot-tooltip h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.scatter-plot-tooltip p {
+  margin: 0.25rem 0;
+  color: var(--text-secondary);
+}
+
+.scatter-plot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.scatter-plot-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.scatter-plot-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.scatter-plot-axes {
+  position: absolute;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.scatter-plot-x-axis {
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.scatter-plot-y-axis {
+  left: -80px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: center;
+}
+
+.scatter-plot-grid-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.scatter-plot-grid-line {
+  position: absolute;
+  background: var(--border);
+  opacity: 0.3;
+}
+
+.scatter-plot-grid-line.horizontal {
+  width: 100%;
+  height: 1px;
+}
+
+.scatter-plot-grid-line.vertical {
+  height: 100%;
+  width: 1px;
+}
+
+/* Dark theme adjustments for scatter plots */
+.dark-theme .scatter-plot-container {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .scatter-plot-canvas {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .scatter-plot-point {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme .scatter-plot-tooltip {
+  background: rgba(17, 24, 39, 0.95);
+  border-color: rgba(75, 85, 99, 0.3);
+  color: var(--dark-text);
+}
+
+.dark-theme .scatter-plot-legend-item {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+  color: var(--dark-text);
+}
+
+.dark-theme .scatter-plot-legend-color {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme .scatter-plot-grid-line {
+  background: rgba(75, 85, 99, 0.3);
+}
+
+/* Scatter Plot Animations */
+@keyframes scatterPointAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scatter-plot-point {
+  animation: scatterPointAppear 0.6s ease-out;
+}
+
+.scatter-plot-point:nth-child(1) { animation-delay: 0.1s; }
+.scatter-plot-point:nth-child(2) { animation-delay: 0.2s; }
+.scatter-plot-point:nth-child(3) { animation-delay: 0.3s; }
+.scatter-plot-point:nth-child(4) { animation-delay: 0.4s; }
+.scatter-plot-point:nth-child(5) { animation-delay: 0.5s; }
+.scatter-plot-point:nth-child(6) { animation-delay: 0.6s; }
+
+/* Responsive scatter plots */
+@media (max-width: 768px) {
+  .scatter-plot-container {
+    padding: 1rem;
+  }
+  
+  .scatter-plot-canvas {
+    height: 300px;
+  }
+  
+  .scatter-plot-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .scatter-plot-legend {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .scatter-plot-y-axis {
+    left: -60px;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .metrics-grid, .ratios-grid {
@@ -1453,8 +2040,8 @@
 
 .heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
   margin: 1.5rem 0;
 }
 
@@ -1462,7 +2049,7 @@
   background: var(--card-bg);
   border: 2px solid var(--border);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 2rem;
   text-align: center;
   transition: all 0.3s ease;
   position: relative;
@@ -2084,8 +2671,8 @@
 
 .radar-chart {
   position: relative;
-  width: 600px;
-  height: 600px;
+  width: 500px;
+  height: 500px;
   margin: 0 auto;
   background: radial-gradient(circle, var(--card-bg) 0%, var(--bg) 100%);
   border-radius: 50%;
@@ -2126,7 +2713,7 @@
   top: 50%;
   left: 50%;
   transform-origin: 0 0;
-  width: 250px;
+  width: 200px;
   height: 3px;
   background: linear-gradient(90deg, var(--primary), transparent);
 }
@@ -2674,7 +3261,8 @@
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
 }
 
-.instruction-card .metric-value {
+/* Enhanced text readability with dark colors - Light mode only */
+:not([data-theme="dark"]) .instruction-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2689,7 +3277,7 @@
   box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2);
 }
 
-.tick-card .metric-value {
+:not([data-theme="dark"]) .tick-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2704,7 +3292,7 @@
   box-shadow: 0 8px 32px rgba(245, 158, 11, 0.2);
 }
 
-.cycle-card .metric-value {
+:not([data-theme="dark"]) .cycle-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2719,7 +3307,7 @@
   box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
 }
 
-.cpi-card .metric-value {
+:not([data-theme="dark"]) .cpi-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2734,7 +3322,7 @@
   box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
 }
 
-.ipc-card .metric-value {
+:not([data-theme="dark"]) .ipc-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2749,7 +3337,7 @@
   box-shadow: 0 8px 32px rgba(6, 182, 212, 0.2);
 }
 
-.sim-time-card .metric-value {
+:not([data-theme="dark"]) .sim-time-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2764,7 +3352,7 @@
   box-shadow: 0 8px 32px rgba(132, 204, 22, 0.2);
 }
 
-.host-time-card .metric-value {
+:not([data-theme="dark"]) .host-time-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2779,7 +3367,7 @@
   box-shadow: 0 8px 32px rgba(249, 115, 22, 0.2);
 }
 
-.speedup-card .metric-value {
+:not([data-theme="dark"]) .speedup-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2794,7 +3382,7 @@
   box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2);
 }
 
-.tick-rate-card .metric-value {
+:not([data-theme="dark"]) .tick-rate-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
@@ -2919,136 +3507,137 @@
   box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2);
 }
 
-.inst-rate-card .metric-value {
+:not([data-theme="dark"]) .inst-rate-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
 /* Memory Access Cards - Metric Values */
-.load-card .metric-value {
+:not([data-theme="dark"]) .load-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.store-card .metric-value {
+:not([data-theme="dark"]) .store-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.memory-ref-card .metric-value {
+:not([data-theme="dark"]) .memory-ref-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.load-percent-card .metric-value {
+:not([data-theme="dark"]) .load-percent-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.store-percent-card .metric-value {
+:not([data-theme="dark"]) .store-percent-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.memory-percent-card .metric-value {
+:not([data-theme="dark"]) .memory-percent-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
 /* Register Usage Cards - Metric Values */
-.int-reg-read-card .metric-value {
+:not([data-theme="dark"]) .int-reg-read-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.int-reg-write-card .metric-value {
+:not([data-theme="dark"]) .int-reg-write-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.float-reg-read-card .metric-value {
+:not([data-theme="dark"]) .float-reg-read-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.float-reg-write-card .metric-value {
+:not([data-theme="dark"]) .float-reg-write-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.total-reg-read-card .metric-value {
+:not([data-theme="dark"]) .total-reg-read-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-.total-reg-write-card .metric-value {
+:not([data-theme="dark"]) .total-reg-write-card .metric-value {
   color: #1f2937;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   font-weight: 700;
 }
 
-/* Enhanced text readability with dark colors */
-.instruction-card h3,
-.tick-card h3,
-.cycle-card h3,
-.cpi-card h3,
-.ipc-card h3,
-.sim-time-card h3,
-.host-time-card h3,
-.speedup-card h3,
-.tick-rate-card h3,
-.inst-rate-card h3,
-.load-card h3,
-.store-card h3,
-.memory-ref-card h3,
-.load-percent-card h3,
-.store-percent-card h3,
-.memory-percent-card h3,
-.int-reg-read-card h3,
-.int-reg-write-card h3,
-.float-reg-read-card h3,
-.float-reg-write-card h3,
-.total-reg-read-card h3,
-.total-reg-write-card h3 {
+/* Enhanced text readability with dark colors - Light mode only */
+:not([data-theme="dark"]) .instruction-card h3,
+:not([data-theme="dark"]) .tick-card h3,
+:not([data-theme="dark"]) .cycle-card h3,
+:not([data-theme="dark"]) .cpi-card h3,
+:not([data-theme="dark"]) .ipc-card h3,
+:not([data-theme="dark"]) .sim-time-card h3,
+:not([data-theme="dark"]) .host-time-card h3,
+:not([data-theme="dark"]) .speedup-card h3,
+:not([data-theme="dark"]) .tick-rate-card h3,
+:not([data-theme="dark"]) .inst-rate-card h3,
+:not([data-theme="dark"]) .load-card h3,
+:not([data-theme="dark"]) .store-card h3,
+:not([data-theme="dark"]) .memory-ref-card h3,
+:not([data-theme="dark"]) .load-percent-card h3,
+:not([data-theme="dark"]) .store-percent-card h3,
+:not([data-theme="dark"]) .memory-percent-card h3,
+:not([data-theme="dark"]) .int-reg-read-card h3,
+:not([data-theme="dark"]) .int-reg-write-card h3,
+:not([data-theme="dark"]) .float-reg-read-card h3,
+:not([data-theme="dark"]) .float-reg-write-card h3,
+:not([data-theme="dark"]) .total-reg-read-card h3,
+:not([data-theme="dark"]) .total-reg-write-card h3 {
   color: #1f2937;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
   font-weight: 600;
 }
 
-.instruction-card .metric-full,
-.tick-card .metric-full,
-.cycle-card .metric-full,
-.cpi-card .metric-full,
-.ipc-card .metric-full,
-.sim-time-card .metric-full,
-.host-time-card .metric-full,
-.speedup-card .metric-full,
-.tick-rate-card .metric-full,
-.inst-rate-card .metric-full,
-.load-card .metric-full,
-.store-card .metric-full,
-.memory-ref-card .metric-full,
-.load-percent-card .metric-full,
-.store-percent-card .metric-full,
-.memory-percent-card .metric-full,
-.int-reg-read-card .metric-full,
-.int-reg-write-card .metric-full,
-.float-reg-read-card .metric-full,
-.float-reg-write-card .metric-full,
-.total-reg-read-card .metric-full,
-.total-reg-write-card .metric-full {
+/* Enhanced text readability with dark colors - Light mode only */
+:not([data-theme="dark"]) .instruction-card .metric-full,
+:not([data-theme="dark"]) .tick-card .metric-full,
+:not([data-theme="dark"]) .cycle-card .metric-full,
+:not([data-theme="dark"]) .cpi-card .metric-full,
+:not([data-theme="dark"]) .ipc-card .metric-full,
+:not([data-theme="dark"]) .sim-time-card .metric-full,
+:not([data-theme="dark"]) .host-time-card .metric-full,
+:not([data-theme="dark"]) .speedup-card .metric-full,
+:not([data-theme="dark"]) .tick-rate-card .metric-full,
+:not([data-theme="dark"]) .inst-rate-card .metric-full,
+:not([data-theme="dark"]) .load-card .metric-full,
+:not([data-theme="dark"]) .store-card .metric-full,
+:not([data-theme="dark"]) .memory-ref-card .metric-full,
+:not([data-theme="dark"]) .load-percent-card .metric-full,
+:not([data-theme="dark"]) .store-percent-card .metric-full,
+:not([data-theme="dark"]) .memory-percent-card .metric-full,
+:not([data-theme="dark"]) .int-reg-read-card .metric-full,
+:not([data-theme="dark"]) .int-reg-write-card .metric-full,
+:not([data-theme="dark"]) .float-reg-read-card .metric-full,
+:not([data-theme="dark"]) .float-reg-write-card .metric-full,
+:not([data-theme="dark"]) .total-reg-read-card .metric-full,
+:not([data-theme="dark"]) .total-reg-write-card .metric-full {
   color: #374151;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
   font-weight: 500;
@@ -3170,114 +3759,263 @@
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(219, 39, 119, 0.25));
 }
 
-/* Dark theme adjustments for colored cards */
-[data-theme="dark"] .instruction-card,
-[data-theme="dark"] .tick-card,
-[data-theme="dark"] .cycle-card,
-[data-theme="dark"] .cpi-card,
-[data-theme="dark"] .ipc-card,
-[data-theme="dark"] .sim-time-card,
-[data-theme="dark"] .host-time-card,
-[data-theme="dark"] .speedup-card,
-[data-theme="dark"] .tick-rate-card,
-[data-theme="dark"] .inst-rate-card,
-[data-theme="dark"] .load-card,
-[data-theme="dark"] .store-card,
-[data-theme="dark"] .memory-ref-card,
-[data-theme="dark"] .load-percent-card,
-[data-theme="dark"] .store-percent-card,
-[data-theme="dark"] .memory-percent-card,
-[data-theme="dark"] .int-reg-read-card,
-[data-theme="dark"] .int-reg-write-card,
-[data-theme="dark"] .float-reg-read-card,
-[data-theme="dark"] .float-reg-write-card,
-[data-theme="dark"] .total-reg-read-card,
-[data-theme="dark"] .total-reg-write-card {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2));
-  border-color: rgba(59, 130, 246, 0.4);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+/* Dark theme adjustments for colored cards - Apply same colors as light theme */
+.dark-theme .instruction-card {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(29, 78, 216, 0.15)) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2) !important;
 }
 
-/* Dark theme text colors - Light text for dark backgrounds */
-[data-theme="dark"] .instruction-card h3,
-[data-theme="dark"] .tick-card h3,
-[data-theme="dark"] .cycle-card h3,
-[data-theme="dark"] .cpi-card h3,
-[data-theme="dark"] .ipc-card h3,
-[data-theme="dark"] .sim-time-card h3,
-[data-theme="dark"] .host-time-card h3,
-[data-theme="dark"] .speedup-card h3,
-[data-theme="dark"] .tick-rate-card h3,
-[data-theme="dark"] .inst-rate-card h3,
-[data-theme="dark"] .load-card h3,
-[data-theme="dark"] .store-card h3,
-[data-theme="dark"] .memory-ref-card h3,
-[data-theme="dark"] .load-percent-card h3,
-[data-theme="dark"] .store-percent-card h3,
-[data-theme="dark"] .memory-percent-card h3,
-[data-theme="dark"] .int-reg-read-card h3,
-[data-theme="dark"] .int-reg-write-card h3,
-[data-theme="dark"] .float-reg-read-card h3,
-[data-theme="dark"] .float-reg-write-card h3,
-[data-theme="dark"] .total-reg-read-card h3,
-[data-theme="dark"] .total-reg-write-card h3 {
-  color: #f9fafb !important;
+.dark-theme .tick-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15)) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2) !important;
+}
+
+.dark-theme .cycle-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15)) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.2) !important;
+}
+
+.dark-theme .cpi-card {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15)) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark-theme .ipc-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.15)) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2) !important;
+}
+
+.dark-theme .sim-time-card {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(8, 145, 178, 0.15)) !important;
+  border-color: rgba(6, 182, 212, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.2) !important;
+}
+
+.dark-theme .host-time-card {
+  background: linear-gradient(135deg, rgba(132, 204, 22, 0.15), rgba(101, 163, 13, 0.15)) !important;
+  border-color: rgba(132, 204, 22, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(132, 204, 22, 0.2) !important;
+}
+
+.dark-theme .speedup-card {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 88, 12, 0.15)) !important;
+  border-color: rgba(249, 115, 22, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(249, 115, 22, 0.2) !important;
+}
+
+.dark-theme .tick-rate-card {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(219, 39, 119, 0.15)) !important;
+  border-color: rgba(236, 72, 153, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2) !important;
+}
+
+.dark-theme .inst-rate-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.15)) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2) !important;
+}
+
+.dark-theme .load-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.15)) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2) !important;
+}
+
+.dark-theme .store-card {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(219, 39, 119, 0.15)) !important;
+  border-color: rgba(236, 72, 153, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2) !important;
+}
+
+.dark-theme .memory-ref-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15)) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.2) !important;
+}
+
+.dark-theme .load-percent-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15)) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2) !important;
+}
+
+.dark-theme .store-percent-card {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15)) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark-theme .memory-percent-card {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(8, 145, 178, 0.15)) !important;
+  border-color: rgba(6, 182, 212, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.2) !important;
+}
+
+.dark-theme .int-reg-read-card {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(29, 78, 216, 0.15)) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2) !important;
+}
+
+.dark-theme .int-reg-write-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15)) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2) !important;
+}
+
+.dark-theme .float-reg-read-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15)) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.2) !important;
+}
+
+.dark-theme .float-reg-write-card {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15)) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark-theme .total-reg-read-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.15)) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2) !important;
+}
+
+.dark-theme .total-reg-write-card {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(219, 39, 119, 0.15)) !important;
+  border-color: rgba(236, 72, 153, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2) !important;
+}
+
+/* Dark mode for all metric cards - OVERRIDE ANY OTHER CSS */
+[data-theme="dark"] .metric-card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .metric-card h3 {
+  color: white !important;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.8) !important;
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
-[data-theme="dark"] .instruction-card .metric-full,
-[data-theme="dark"] .tick-card .metric-full,
-[data-theme="dark"] .cycle-card .metric-full,
-[data-theme="dark"] .cpi-card .metric-full,
-[data-theme="dark"] .ipc-card .metric-full,
-[data-theme="dark"] .sim-time-card .metric-full,
-[data-theme="dark"] .host-time-card .metric-full,
-[data-theme="dark"] .speedup-card .metric-full,
-[data-theme="dark"] .tick-rate-card .metric-full,
-[data-theme="dark"] .inst-rate-card .metric-full,
-[data-theme="dark"] .load-card .metric-full,
-[data-theme="dark"] .store-card .metric-full,
-[data-theme="dark"] .memory-ref-card .metric-full,
-[data-theme="dark"] .load-percent-card .metric-full,
-[data-theme="dark"] .store-percent-card .metric-full,
-[data-theme="dark"] .memory-percent-card .metric-full,
-[data-theme="dark"] .int-reg-read-card .metric-full,
-[data-theme="dark"] .int-reg-write-card .metric-full,
-[data-theme="dark"] .float-reg-read-card .metric-full,
-[data-theme="dark"] .float-reg-write-card .metric-full,
-[data-theme="dark"] .total-reg-read-card .metric-full,
-[data-theme="dark"] .total-reg-write-card .metric-full {
-  color: #e5e7eb !important;
-  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6) !important;
-  font-weight: 500;
-}
-
-[data-theme="dark"] .instruction-card .metric-value,
-[data-theme="dark"] .tick-card .metric-value,
-[data-theme="dark"] .cycle-card .metric-value,
-[data-theme="dark"] .cpi-card .metric-value,
-[data-theme="dark"] .ipc-card .metric-value,
-[data-theme="dark"] .sim-time-card .metric-value,
-[data-theme="dark"] .host-time-card .metric-value,
-[data-theme="dark"] .speedup-card .metric-value,
-[data-theme="dark"] .tick-rate-card .metric-value,
-[data-theme="dark"] .inst-rate-card .metric-value,
-[data-theme="dark"] .load-card .metric-value,
-[data-theme="dark"] .store-card .metric-value,
-[data-theme="dark"] .memory-ref-card .metric-value,
-[data-theme="dark"] .load-percent-card .metric-value,
-[data-theme="dark"] .store-percent-card .metric-value,
-[data-theme="dark"] .memory-percent-card .metric-value,
-[data-theme="dark"] .int-reg-read-card .metric-value,
-[data-theme="dark"] .int-reg-write-card .metric-value,
-[data-theme="dark"] .float-reg-read-card .metric-value,
-[data-theme="dark"] .float-reg-write-card .metric-value,
-[data-theme="dark"] .total-reg-read-card .metric-value,
-[data-theme="dark"] .total-reg-write-card .metric-value {
-  color: #f9fafb !important;
+[data-theme="dark"] .metric-card .metric-value {
+  color: white !important;
   text-shadow: 0 0 15px rgba(0, 0, 0, 0.8) !important;
-  font-weight: 700;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] .metric-card .metric-full {
+  color: white !important;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6) !important;
+  font-weight: 500 !important;
+}
+
+/* Binary Info Cards - Dark Mode */
+.dark-theme .binary-info-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.15)) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2) !important;
+}
+
+.dark-theme .binary-info-card h3 {
+  color: white !important;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8) !important;
+  font-weight: 600 !important;
+}
+
+.dark-theme .binary-info-value {
+  color: white !important;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6) !important;
+  font-weight: 500 !important;
+}
+
+/* Dark theme text colors - Light text for dark backgrounds - SUPER STRONG */
+.dark-theme .instruction-card h3,
+.dark-theme .tick-card h3,
+.dark-theme .cycle-card h3,
+.dark-theme .cpi-card h3,
+.dark-theme .ipc-card h3,
+.dark-theme .sim-time-card h3,
+.dark-theme .host-time-card h3,
+.dark-theme .speedup-card h3,
+.dark-theme .tick-rate-card h3,
+.dark-theme .inst-rate-card h3,
+.dark-theme .load-card h3,
+.dark-theme .store-card h3,
+.dark-theme .memory-ref-card h3,
+.dark-theme .load-percent-card h3,
+.dark-theme .store-percent-card h3,
+.dark-theme .memory-percent-card h3,
+.dark-theme .int-reg-read-card h3,
+.dark-theme .int-reg-write-card h3,
+.dark-theme .float-reg-read-card h3,
+.dark-theme .float-reg-write-card h3,
+.dark-theme .total-reg-read-card h3,
+.dark-theme .total-reg-write-card h3 {
+  color: white !important;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8) !important;
+  font-weight: 600 !important;
+}
+
+.dark-theme .instruction-card .metric-full,
+.dark-theme .tick-card .metric-full,
+.dark-theme .cycle-card .metric-full,
+.dark-theme .cpi-card .metric-full,
+.dark-theme .ipc-card .metric-full,
+.dark-theme .sim-time-card .metric-full,
+.dark-theme .host-time-card .metric-full,
+.dark-theme .speedup-card .metric-full,
+.dark-theme .tick-rate-card .metric-full,
+.dark-theme .inst-rate-card .metric-full,
+.dark-theme .load-card .metric-full,
+.dark-theme .store-card .metric-full,
+.dark-theme .memory-ref-card .metric-full,
+.dark-theme .load-percent-card .metric-full,
+.dark-theme .store-percent-card .metric-full,
+.dark-theme .memory-percent-card .metric-full,
+.dark-theme .int-reg-read-card .metric-full,
+.dark-theme .int-reg-write-card .metric-full,
+.dark-theme .float-reg-read-card .metric-full,
+.dark-theme .float-reg-write-card .metric-full,
+.dark-theme .total-reg-read-card .metric-full,
+.dark-theme .total-reg-write-card .metric-full {
+  color: white !important;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6) !important;
+  font-weight: 500 !important;
+}
+
+.dark-theme .instruction-card .metric-value,
+.dark-theme .tick-card .metric-value,
+.dark-theme .cycle-card .metric-value,
+.dark-theme .cpi-card .metric-value,
+.dark-theme .ipc-card .metric-value,
+.dark-theme .sim-time-card .metric-value,
+.dark-theme .host-time-card .metric-value,
+.dark-theme .speedup-card .metric-value,
+.dark-theme .tick-rate-card .metric-value,
+.dark-theme .inst-rate-card .metric-value,
+.dark-theme .load-card .metric-value,
+.dark-theme .store-card .metric-value,
+.dark-theme .memory-ref-card .metric-value,
+.dark-theme .load-percent-card .metric-value,
+.dark-theme .store-percent-card .metric-value,
+.dark-theme .memory-percent-card .metric-value,
+.dark-theme .int-reg-read-card .metric-value,
+.dark-theme .int-reg-write-card .metric-value,
+.dark-theme .float-reg-read-card .metric-value,
+.dark-theme .float-reg-write-card .metric-value,
+.dark-theme .total-reg-read-card .metric-value,
+.dark-theme .total-reg-write-card .metric-value {
+  color: white !important;
+  text-shadow: 0 0 15px rgba(0, 0, 0, 0.8) !important;
+  font-weight: 700 !important;
 }
 
 /* Instruction Breakdown Section */
@@ -4017,14 +4755,14 @@
 
 .heatmap-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 2fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 1rem;
   margin-bottom: 0.5rem;
   align-items: center;
 }
 
 .heatmap-cell {
-  padding: 0.75rem;
+  padding: 0.25rem;
   border-radius: 6px;
   font-size: 0.9rem;
   text-align: center;
@@ -4046,8 +4784,8 @@
 }
 
 .heatmap-bar {
-  height: 8px;
-  border-radius: 4px;
+  height: 4px;
+  border-radius: 2px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -4234,4 +4972,1336 @@
   color: var(--text);
   font-size: 1rem;
   font-weight: 600;
+}
+
+/* Modern Performance-Style Charts */
+.performance-radar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  position: relative;
+  margin: 2rem 0;
+}
+
+.performance-radar {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #3b82f6 0deg,
+    #3b82f6 72deg,
+    #10b981 72deg,
+    #10b981 144deg,
+    #f59e0b 144deg,
+    #f59e0b 216deg,
+    #ef4444 216deg,
+    #ef4444 288deg,
+    #8b5cf6 288deg,
+    #8b5cf6 360deg
+  );
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.performance-radar::before {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+}
+
+.performance-radar-center {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: var(--text);
+}
+
+.performance-radar-center-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.performance-radar-center-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.performance-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.performance-metric-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.performance-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #10b981, #f59e0b, #ef4444);
+}
+
+.performance-metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px var(--shadow);
+}
+
+.performance-metric-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.performance-metric-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.performance-metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.performance-metric-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Donut Chart Styles */
+.donut-chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  position: relative;
+  margin: 2rem 0;
+}
+
+.donut-chart {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  position: relative;
+  background: conic-gradient(
+    from 0deg,
+    #ef4444 0deg,
+    #ef4444 var(--spill-angle, 0deg),
+    #10b981 var(--spill-angle, 0deg),
+    #10b981 360deg
+  );
+}
+
+.donut-chart::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--border);
+}
+
+.donut-chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.donut-chart-center-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.donut-chart-center-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.donut-chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-left: 2rem;
+}
+
+.donut-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.donut-chart-legend-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.donut-chart-legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.donut-chart-legend-color.spill {
+  background: #ef4444;
+}
+
+.donut-chart-legend-color.normal {
+  background: #10b981;
+}
+
+.donut-chart-legend-value {
+  font-weight: 600;
+  color: var(--primary);
+  margin-left: auto;
+}
+
+/* Heatmap Grid Styles */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  margin: 2rem 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.1);
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.heatmap-cell-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.heatmap-cell:hover .heatmap-cell-tooltip {
+  opacity: 1;
+}
+
+/* Modern Scatter Plot Styles */
+.scatter-plot-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 2rem 0;
+  margin-left: 80px;
+}
+
+.scatter-plot-canvas {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: visible;
+}
+
+.scatter-plot-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.1;
+}
+
+.scatter-plot-grid-line {
+  position: absolute;
+  background: var(--text-secondary);
+  opacity: 0.2;
+}
+
+.scatter-plot-grid-line.horizontal {
+  width: 100%;
+  height: 1px;
+}
+
+.scatter-plot-grid-line.vertical {
+  width: 1px;
+  height: 100%;
+}
+
+.scatter-plot-canvas {
+  background-image: 
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 0;
+}
+
+.scatter-plot-points {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 40px;
+}
+
+.scatter-plot-point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.scatter-plot-point:hover {
+  transform: scale(1.5);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.scatter-plot-point.high-impact {
+  background: #ef4444;
+}
+
+.scatter-plot-point.medium-impact {
+  background: #f59e0b;
+}
+
+.scatter-plot-point.low-impact {
+  background: #10b981;
+}
+
+.scatter-plot-point.critical {
+  background: #8b5cf6;
+}
+
+.scatter-plot-point.normal {
+  background: #3b82f6;
+}
+
+.scatter-plot-axes {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.scatter-plot-y-axis {
+  position: absolute;
+  left: -80px;
+  top: 0;
+  bottom: 40px;
+  width: 80px;
+  background: var(--card-bg);
+  border-right: 1px solid var(--border);
+  z-index: 5;
+}
+
+.scatter-plot-axis-tick {
+  position: absolute;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+/* Spill Events List Styles */
+.spill-events-list-container {
+  margin-top: 2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.spill-events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.spill-events-header h4 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.spill-events-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.spill-field-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  min-width: 150px;
+}
+
+.spill-search-input {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  min-width: 300px;
+  font-family: monospace;
+}
+
+.spill-search-input::placeholder {
+  color: var(--text-secondary);
+  font-family: inherit;
+}
+
+.spill-toggle-btn {
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.spill-toggle-btn:hover {
+  background: var(--primary-hover);
+}
+
+.spill-events-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.spill-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.spill-event-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.spill-event-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.spill-event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.spill-event-index {
+  font-weight: bold;
+  color: var(--text);
+}
+
+.spill-event-impact {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.spill-event-impact.critical {
+  background: rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+}
+
+.spill-event-impact.high-impact {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.spill-event-impact.medium-impact {
+  background: rgba(249, 115, 22, 0.2);
+  color: #f97316;
+}
+
+.spill-event-impact.low-impact {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.spill-event-impact.normal {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.spill-event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.spill-event-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.detail-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-value {
+  color: var(--text);
+  font-family: monospace;
+}
+
+/* Spill Search Section Styles */
+.spill-search-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.spill-search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.spill-search-title h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.spill-search-title p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.spill-search-stats {
+  display: flex;
+  align-items: center;
+}
+
+.search-stats {
+  background: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.spill-search-controls {
+  margin-bottom: 1.5rem;
+}
+
+.search-controls-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.search-field-group,
+.search-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-field-group label,
+.search-input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.spill-field-select {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  min-width: 150px;
+}
+
+.spill-search-input {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: monospace;
+  min-width: 300px;
+}
+
+.spill-search-input::placeholder {
+  color: var(--text-secondary);
+  font-family: inherit;
+}
+
+.search-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.clear-search-btn,
+.toggle-results-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn {
+  background: var(--error);
+  color: white;
+}
+
+.clear-search-btn:hover {
+  background: var(--error-hover);
+}
+
+.toggle-results-btn {
+  background: var(--primary);
+  color: white;
+}
+
+.toggle-results-btn:hover {
+  background: var(--primary-hover);
+}
+
+.spill-search-results {
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.results-header h5 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.search-info {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+}
+
+.search-term {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.search-field {
+  color: var(--text-secondary);
+}
+
+.spill-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.spill-event-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.spill-event-item:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.spill-event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.spill-event-index {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.spill-event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spill-event-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.detail-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-value {
+  color: var(--text);
+  font-family: monospace;
+  font-weight: 500;
+}
+
+
+.scatter-plot-axis-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.scatter-plot-axis-tick {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.scatter-plot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.scatter-plot-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.scatter-plot-legend-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.scatter-plot-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.scatter-plot-legend-color.high-impact {
+  background: #ef4444;
+}
+
+.scatter-plot-legend-color.medium-impact {
+  background: #f59e0b;
+}
+
+.scatter-plot-legend-color.low-impact {
+  background: #10b981;
+}
+
+.scatter-plot-legend-color.critical {
+  background: #8b5cf6;
+}
+
+.scatter-plot-legend-color.normal {
+  background: #3b82f6;
+}
+
+.scatter-plot-tooltip {
+  position: absolute;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text);
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.scatter-plot-tooltip.show {
+  opacity: 1;
+}
+
+.scatter-plot-tooltip-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--primary);
+}
+
+.scatter-plot-tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.scatter-plot-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.scatter-plot-tooltip-label {
+  color: var(--text-secondary);
+}
+
+.scatter-plot-tooltip-value {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Dark theme adjustments for performance charts */
+.dark-theme .performance-radar::before {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .performance-metric-card {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .donut-chart::before {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .donut-chart-legend-item {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .heatmap-cell-tooltip {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: rgba(75, 85, 99, 0.3);
+  color: var(--dark-text);
+}
+
+.dark-theme .scatter-plot-canvas {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .scatter-plot-axes,
+.dark-theme .scatter-plot-y-axis {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .scatter-plot-legend-item {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .scatter-plot-tooltip {
+  background: rgba(17, 24, 39, 0.95);
+  border-color: rgba(75, 85, 99, 0.3);
+  color: var(--dark-text);
+}
+
+/* Histogram Chart Styles */
+.histogram-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.histogram-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.histogram-label {
+  min-width: 120px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.histogram-bar-container {
+  flex: 1;
+  height: 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.histogram-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.histogram-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.histogram-value {
+  min-width: 80px;
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.histogram-percentage {
+  min-width: 60px;
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* PC Pattern Chart Styles */
+.pc-pattern-chart {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 1rem 0;
+}
+
+.pc-pattern-section {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.pc-pattern-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.pc-pattern-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.pc-pattern-rank {
+  min-width: 40px;
+  text-align: center;
+}
+
+.medal-icon {
+  font-size: 1.2rem;
+  display: inline-block;
+  animation: medalGlow 2s ease-in-out infinite;
+}
+
+/* Medal Effects */
+.gold-medal {
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.1) 0%, 
+    rgba(255, 215, 0, 0.05) 50%, 
+    rgba(255, 215, 0, 0.1) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.silver-medal {
+  background: linear-gradient(135deg, 
+    rgba(192, 192, 192, 0.1) 0%, 
+    rgba(192, 192, 192, 0.05) 50%, 
+    rgba(192, 192, 192, 0.1) 100%);
+  border: 2px solid rgba(192, 192, 192, 0.3);
+  box-shadow: 0 0 20px rgba(192, 192, 192, 0.2);
+}
+
+.bronze-medal {
+  background: linear-gradient(135deg, 
+    rgba(205, 127, 50, 0.1) 0%, 
+    rgba(205, 127, 50, 0.05) 50%, 
+    rgba(205, 127, 50, 0.1) 100%);
+  border: 2px solid rgba(205, 127, 50, 0.3);
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.2);
+}
+
+.regular-rank {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+}
+
+@keyframes medalGlow {
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.1);
+    filter: brightness(1.2);
+  }
+}
+
+/* Expandable Details */
+.expand-icon {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.pc-pattern-item.expanded .expand-icon {
+  transform: rotate(180deg);
+}
+
+.pc-pattern-details {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 1rem;
+  margin-top: -1px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.detail-value.impact-critical {
+  color: #ef4444;
+}
+
+.detail-value.impact-high {
+  color: #f59e0b;
+}
+
+.detail-value.impact-medium {
+  color: #10b981;
+}
+
+.detail-value.impact-low {
+  color: #6b7280;
+}
+
+.detail-value.efficiency-excellent {
+  color: #10b981;
+}
+
+.detail-value.efficiency-good {
+  color: #3b82f6;
+}
+
+.detail-value.efficiency-fair {
+  color: #f59e0b;
+}
+
+.detail-value.efficiency-poor {
+  color: #ef4444;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pc-pattern-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.pc-pattern-pc {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.pc-pattern-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Timeline Chart Styles */
+.timeline-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.timeline-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.timeline-time {
+  min-width: 150px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.timeline-bar-container {
+  flex: 1;
+  height: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.timeline-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.timeline-count {
+  min-width: 60px;
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Dark theme adjustments for new charts */
+.dark-theme .histogram-bar-container,
+.dark-theme .timeline-bar-container {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .pc-pattern-item,
+.dark-theme .timeline-item {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .gold-medal {
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.15) 0%, 
+    rgba(255, 215, 0, 0.08) 50%, 
+    rgba(255, 215, 0, 0.15) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+}
+
+.dark-theme .silver-medal {
+  background: linear-gradient(135deg, 
+    rgba(192, 192, 192, 0.15) 0%, 
+    rgba(192, 192, 192, 0.08) 50%, 
+    rgba(192, 192, 192, 0.15) 100%);
+  border: 2px solid rgba(192, 192, 192, 0.4);
+  box-shadow: 0 0 25px rgba(192, 192, 192, 0.3);
+}
+
+.dark-theme .bronze-medal {
+  background: linear-gradient(135deg, 
+    rgba(205, 127, 50, 0.15) 0%, 
+    rgba(205, 127, 50, 0.08) 50%, 
+    rgba(205, 127, 50, 0.15) 100%);
+  border: 2px solid rgba(205, 127, 50, 0.4);
+  box-shadow: 0 0 25px rgba(205, 127, 50, 0.3);
+}
+
+.dark-theme .pc-pattern-details {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .detail-row {
+  border-bottom-color: rgba(75, 85, 99, 0.3);
+}
+
+.dark-theme .detail-label {
+  color: var(--dark-text);
+}
+
+.dark-theme .detail-value {
+  color: var(--dark-text);
+}
+
+.dark-theme .pc-pattern-pc,
+.dark-theme .timeline-time {
+  color: var(--dark-text);
+}
+
+.dark-theme .histogram-label,
+.dark-theme .histogram-percentage {
+  color: var(--dark-text);
 }
