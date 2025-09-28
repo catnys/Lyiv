@@ -312,7 +312,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **v1.5.0**: Implemented register spill analysis and memory system statistics
 - **v1.0.0**: Initial release with basic gem5 simulation analysis features
 
-## 🚀 Next Steps (Development Notes)
+## 🚀 Next Steps (Development Notes) for me :)
 
 ### 📊 SQL Database Integration for Instruction-Level Analysis
 
@@ -449,5 +449,5 @@ CREATE INDEX idx_memory_access_instruction ON memory_access(instruction_id);
   
   <br><br>
   
-  <em>Made with ☕ and ❤️ for the computer architecture research community</em>
+  <em>Made with ☕ and ❤️ for the computer architecture research lab (CAST)</em>
 </div>
