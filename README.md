@@ -2,7 +2,7 @@
 > **Smooth Latte Gem5 Interface** - A Modern Simulation Analysis Platform
 
 <div align="center">
-  <img src="images/4419422.png" alt="Pixel Art Coffee Latte" width="200" height="200">
+  <img src="images/stuff/coffyyy.png" alt="Pixel Art Coffee Latte" width="200" height="200">
   
   [![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://python.org)
   [![React](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://reactjs.org)
@@ -25,6 +25,8 @@
 - 📊 **Live Data Updates** - Real-time data loading and display synchronization
 - 📱 **Responsive Design** - Optimized for desktop, tablet, and mobile devices
 - 🔍 **Detailed Tooltips** - Contextual information for every data point
+- 🔥 **Thermal Heatmap Visualizations** - Register usage intensity analysis
+- ⚡ **Dynamic vs Static Instruction Analysis** - Comprehensive instruction breakdown
 
 ## 🚀 Quick Start
 
@@ -148,6 +150,8 @@ The application automatically loads and processes data from the `m5out/` directo
 - **Performance Metrics**: CPU utilization and efficiency analysis
 - **Memory System Stats**: Cache performance and memory bandwidth
 - **Instruction Mix**: Detailed instruction type breakdown
+- **Register Usage Heatmap**: Thermal visualization of register access patterns
+- **Dynamic vs Static Analysis**: Comprehensive instruction type comparison
 
 ### Data Sources
 Each metric displays its data source and calculation method:
@@ -262,6 +266,8 @@ We welcome contributions to improve Lyiv! Here are some areas where you can help
 - **Additional API Endpoints**: Extend backend functionality
 - **UI/UX Improvements**: Enhance user interface and experience
 - **Performance Optimizations**: Improve data processing and rendering speed
+- **Heatmap Enhancements**: Add more thermal visualization features
+- **Advanced Analytics**: Implement machine learning-based performance predictions
 
 ### 🐛 Bug Fixes & Improvements
 - **Error Handling**: Better error messages and recovery mechanisms
@@ -291,6 +297,20 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **React Community**: For the excellent frontend ecosystem
 - **Flask Team**: For the lightweight Python web framework
 - **Contributors**: Thanks to all who have contributed to this project
+
+## 📝 Recent Updates
+
+### Version 2.1.0 (Latest)
+- ✅ **Removed Memory Access Heatmap** - Simplified interface by removing redundant memory visualization
+- ✅ **Enhanced Register Usage Heatmap** - Improved thermal visualization for register access patterns
+- ✅ **Fixed JSX Syntax Errors** - Resolved compilation issues and improved code structure
+- ✅ **Updated Documentation** - Enhanced README with latest features and improvements
+- ✅ **Code Optimization** - Streamlined component structure and improved performance
+
+### Previous Versions
+- **v2.0.0**: Added thermal heatmap visualizations and dynamic instruction analysis
+- **v1.5.0**: Implemented register spill analysis and memory system statistics
+- **v1.0.0**: Initial release with basic gem5 simulation analysis features
 
 ---
 

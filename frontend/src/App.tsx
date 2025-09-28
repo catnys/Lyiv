@@ -2304,15 +2304,32 @@ const SpillEventsList: React.FC<{
               />
             </div>
             
-            {/* Spill Event Timeline */}
-            {spillAnalysis.charts.scatter_plot_data && (
-              <SpillEventTimeline
-                title="Spill Event Timeline Analysis"
-                description="Spill events over time"
-                data={spillAnalysis.charts.scatter_plot_data.data}
-                isDarkTheme={isDarkTheme}
-              />
-            )}
+            {/* Spill Visualization Graphs */}
+            <div className="spill-visualization-section">
+              <h3>📊 Spill Visualization Graphs</h3>
+              <div className="graphs-grid">
+                <div className="graph-item">
+                  <h4>📈 Timeline Analysis</h4>
+                  <img src="/images/graphs/timeline_scatter_plot.png" alt="Timeline Scatter Plot" />
+                </div>
+                <div className="graph-item">
+                  <h4>💾 Memory Address Analysis</h4>
+                  <img src="/images/graphs/memory_address_scatter_plot.png" alt="Memory Address Scatter Plot" />
+                </div>
+                <div className="graph-item">
+                  <h4>🔥 Store PC Analysis</h4>
+                  <img src="/images/graphs/store_pc_scatter_plot.png" alt="Store PC Scatter Plot" />
+                </div>
+                <div className="graph-item">
+                  <h4>🔥 Spill Heatmap</h4>
+                  <img src="/images/graphs/spill_heatmap.png" alt="Spill Heatmap" />
+                </div>
+                <div className="graph-item">
+                  <h4>🕸️ Network Connections</h4>
+                  <img src="/images/graphs/spill_network_plot.png" alt="Spill Network Plot" />
+                </div>
+              </div>
+            </div>
             
             {/* Spill Events Search & Filter Section */}
             {spillAnalysis.charts.scatter_plot_data && (
@@ -2739,7 +2756,7 @@ const SpillEventsList: React.FC<{
                        ))}
                    </p>
                  </div>
-                           </div>
+               </div>
              )}
            </main>
          </div>
@@ -2752,7 +2769,9 @@ const SpillEventsList: React.FC<{
            </header>
            
            <main className="container">
-             <div className="metrics-grid">
+             {metrics && (
+               <>
+               <div className="metrics-grid">
                <div className="metric-card performance-card">
                  <div className="metric-header">
                    <h3>CPI (Cycles per Instruction)</h3>
@@ -2804,7 +2823,7 @@ const SpillEventsList: React.FC<{
                    <h3>Memory Efficiency</h3>
                  </div>
                  <div className="metric-value performance-value">
-                   {((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100).toFixed(2)}%
+                   {(((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(2)}%
                  </div>
                  <div className="metric-full">
                    Memory operations ratio
@@ -2814,7 +2833,7 @@ const SpillEventsList: React.FC<{
                      <div 
                        className="performance-bar-fill" 
                               style={{ 
-                         width: `${((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100)}%`,
+                         width: `${(((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100)}%`,
                          backgroundColor: '#3b82f6'
                               }}
                             ></div>
@@ -2837,7 +2856,7 @@ const SpillEventsList: React.FC<{
                      <div 
                        className="performance-bar-fill" 
                               style={{ 
-                         width: `${Math.min(((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions * 100), 100)}%`,
+                         width: `${Math.min((((metrics?.int_reg_reads || 0) + (metrics?.fp_reg_reads || 0)) / (metrics?.total_instructions || 1) * 100), 100)}%`,
                          backgroundColor: '#8b5cf6'
                               }}
                             ></div>
@@ -2846,174 +2865,27 @@ const SpillEventsList: React.FC<{
                </div>
              </div>
              
-             {/* Creative Performance Visualization */}
-             <div className="performance-visualization">
-               <h3>🚀 Performance Analysis Dashboard</h3>
-               
-               {/* Dual Performance Analysis */}
-               <div className="dual-performance-container">
-                 {/* Performance Metrics Radar */}
-                 <div className="performance-radar-container">
-                   <h4>📊 Performance Metrics</h4>
-                   <div className="radar-chart">
-                     <div className="radar-center">
-                       <div className="radar-center-icon">⚡</div>
-                       <div className="radar-center-text">Performance</div>
-                     </div>
-                     
-                     {/* Performance Metrics Axes */}
-                     <div className="radar-axes">
-                       <div className="radar-axis" style={{transform: 'rotate(0deg)'}}>
-                         <div className="axis-label">🚀 IPC</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${Math.min(100, (metrics.ipc / 0.01) * 100)}%`,
-                           '--color': '#10b981'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{metrics.ipc.toFixed(4)}</div>
-                         </div>
-                       </div>
-                       
-                       <div className="radar-axis" style={{transform: 'rotate(90deg)'}}>
-                         <div className="axis-label">⚡ CPI</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${Math.max(0, 100 - (metrics.cpi / 200) * 100)}%`,
-                           '--color': '#3b82f6'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{metrics.cpi.toFixed(1)}</div>
-                         </div>
-                       </div>
-                       
-                       <div className="radar-axis" style={{transform: 'rotate(180deg)'}}>
-                         <div className="axis-label">💾 Memory</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${Math.min(100, ((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100))}%`,
-                           '--color': '#f59e0b'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100).toFixed(1)}%</div>
-                         </div>
-                       </div>
-                       
-                       <div className="radar-axis" style={{transform: 'rotate(270deg)'}}>
-                         <div className="axis-label">🔢 Registers</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${Math.min(100, ((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions * 100))}%`,
-                           '--color': '#ef4444'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions * 100).toFixed(1)}%</div>
-                         </div>
-                       </div>
-                     </div>
+             {/* Detailed Trade-off Analysis */}
+             <div className="tradeoff-analysis">
+               <h5>📈 Detailed Trade-off Analysis</h5>
+               <div className="tradeoff-grid">
+                 <div className="tradeoff-card">
+                   <div className="tradeoff-header">
+                     <span className="tradeoff-emoji">⚡</span>
+                     <span className="tradeoff-title">Performance vs Power</span>
                    </div>
-                 </div>
-                 
-                 {/* Trade-off Analysis Radar */}
-                 <div className="tradeoff-radar-container">
-                   <h4>⚖️ Trade-off Analysis</h4>
-                   <div className="radar-chart">
-                     <div className="radar-center">
-                       <div className="radar-center-icon">⚖️</div>
-                       <div className="radar-center-text">Trade-offs</div>
+                   <div className="tradeoff-content">
+                     <div className="tradeoff-metric">
+                       <span className="metric-label">Current IPC:</span>
+                       <span className="metric-value">{(metrics?.ipc || 0).toFixed(4)}</span>
                      </div>
-                     
-                     {/* Trade-off Axes */}
-                     <div className="radar-axes">
-                       <div className="radar-axis" style={{transform: 'rotate(0deg)'}}>
-                         <div className="axis-label">🚀 vs 🔋</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${metrics.ipc > 0.005 ? 80 : 20}%`,
-                           '--color': '#10b981'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{metrics.ipc > 0.005 ? 'High Perf' : 'Low Power'}</div>
-                         </div>
-                       </div>
-                       
-                       <div className="radar-axis" style={{transform: 'rotate(90deg)'}}>
-                         <div className="axis-label">💾 vs ⚡</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${((metrics.total_loads + metrics.total_stores) / metrics.total_instructions) > 0.3 ? 80 : 20}%`,
-                           '--color': '#3b82f6'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{((metrics.total_loads + metrics.total_stores) / metrics.total_instructions) > 0.3 ? 'Memory' : 'Compute'}</div>
-                         </div>
-                       </div>
-                       
-                       <div className="radar-axis" style={{transform: 'rotate(180deg)'}}>
-                         <div className="axis-label">🔢 vs 💾</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions) > 2 ? 80 : 20}%`,
-                           '--color': '#f59e0b'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions) > 2 ? 'Register' : 'Cache'}</div>
-                         </div>
-                       </div>
-                       
-                       <div className="radar-axis" style={{transform: 'rotate(270deg)'}}>
-                         <div className="axis-label">⚡ vs 🔋</div>
-                         <div className="axis-value" style={{
-                           '--efficiency': `${metrics.cpi < 100 ? 80 : 20}%`,
-                           '--color': '#ef4444'
-                         } as React.CSSProperties}>
-                           <div className="efficiency-bar"></div>
-                           <div className="efficiency-text">{metrics.cpi < 100 ? 'Efficient' : 'Power'}</div>
-                         </div>
-                       </div>
+                     <div className="tradeoff-metric">
+                       <span className="metric-label">Power Efficiency:</span>
+                       <span className="metric-value">{((1/(metrics?.cpi || 1)) * 100).toFixed(1)}%</span>
                      </div>
-                     
-                     {/* Trade-off Indicators */}
-                     <div className="tradeoff-indicators">
-                       <div className="tradeoff-indicator" style={{top: '15%', left: '15%'}}>
-                         <div className="tradeoff-icon">⚡</div>
-                         <div className="tradeoff-label">High Perf</div>
-                         <div className="tradeoff-cost">High Power</div>
-                       </div>
-                       <div className="tradeoff-indicator" style={{top: '15%', right: '15%'}}>
-                         <div className="tradeoff-icon">🔋</div>
-                         <div className="tradeoff-label">Low Power</div>
-                         <div className="tradeoff-cost">Low Perf</div>
-                       </div>
-                       <div className="tradeoff-indicator" style={{bottom: '15%', left: '15%'}}>
-                         <div className="tradeoff-icon">💾</div>
-                         <div className="tradeoff-label">Memory</div>
-                         <div className="tradeoff-cost">Cache Miss</div>
-                       </div>
-                       <div className="tradeoff-indicator" style={{bottom: '15%', right: '15%'}}>
-                         <div className="tradeoff-icon">🔢</div>
-                         <div className="tradeoff-label">Register</div>
-                         <div className="tradeoff-cost">Spill Risk</div>
-                       </div>
+                     <div className="tradeoff-status">
+                       {(metrics?.ipc || 0) > 0.005 ? '🚀 High Performance' : '🔋 Power Optimized'}
                      </div>
-                   </div>
-                 </div>
-               </div>
-               
-               {/* Detailed Trade-off Analysis */}
-               <div className="tradeoff-analysis">
-                 <h5>📈 Detailed Trade-off Analysis</h5>
-                 <div className="tradeoff-grid">
-                   <div className="tradeoff-card">
-                     <div className="tradeoff-header">
-                       <span className="tradeoff-emoji">⚡</span>
-                       <span className="tradeoff-title">Performance vs Power</span>
-                     </div>
-                     <div className="tradeoff-content">
-                       <div className="tradeoff-metric">
-                         <span className="metric-label">Current IPC:</span>
-                         <span className="metric-value">{metrics.ipc.toFixed(4)}</span>
-                       </div>
-                       <div className="tradeoff-metric">
-                         <span className="metric-label">Power Efficiency:</span>
-                         <span className="metric-value">{((1/metrics.cpi) * 100).toFixed(1)}%</span>
-                       </div>
-                       <div className="tradeoff-status">
-                         {metrics.ipc > 0.005 ? '🚀 High Performance' : '🔋 Power Optimized'}
-                       </div>
                      </div>
                    </div>
                    
@@ -3025,14 +2897,14 @@ const SpillEventsList: React.FC<{
                      <div className="tradeoff-content">
                        <div className="tradeoff-metric">
                          <span className="metric-label">Memory Intensity:</span>
-                         <span className="metric-value">{((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100).toFixed(1)}%</span>
+                         <span className="metric-value">{(((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(1)}%</span>
                        </div>
                        <div className="tradeoff-metric">
                          <span className="metric-label">Cache Pressure:</span>
-                         <span className="metric-value">{metrics.total_memory_refs > 0 ? 'High' : 'Low'}</span>
+                         <span className="metric-value">{(metrics?.total_memory_refs || 0) > 0 ? 'High' : 'Low'}</span>
                        </div>
                        <div className="tradeoff-status">
-                         {(metrics.total_loads + metrics.total_stores) / metrics.total_instructions > 0.3 ? '💾 Memory Bound' : '⚡ Compute Bound'}
+                         {(((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1)) > 0.3 ? '💾 Memory Bound' : '⚡ Compute Bound'}
                        </div>
                      </div>
                    </div>
@@ -3091,17 +2963,17 @@ const SpillEventsList: React.FC<{
                        <div 
                          className="gauge-fill ipc-gauge"
                          style={{
-                           '--percentage': `${Math.min(100, (metrics.ipc / 0.01) * 100)}%`,
-                           '--color': metrics.ipc > 0.005 ? '#10b981' : metrics.ipc > 0.001 ? '#f59e0b' : '#ef4444'
+                           '--percentage': `${Math.min(100, ((metrics?.ipc || 0) / 0.01) * 100)}%`,
+                           '--color': (metrics?.ipc || 0) > 0.005 ? '#10b981' : (metrics?.ipc || 0) > 0.001 ? '#f59e0b' : '#ef4444'
                          } as React.CSSProperties}
                        ></div>
                        <div className="gauge-center">
-                         <div className="gauge-value">{metrics.ipc.toFixed(4)}</div>
+                         <div className="gauge-value">{(metrics?.ipc || 0).toFixed(4)}</div>
                          <div className="gauge-unit">inst/cycle</div>
                        </div>
                      </div>
                      <div className="gauge-status">
-                       {metrics.ipc > 0.005 ? '🟢 Excellent' : metrics.ipc > 0.001 ? '🟡 Moderate' : '🔴 Poor'}
+                       {(metrics?.ipc || 0) > 0.005 ? '🟢 Excellent' : (metrics?.ipc || 0) > 0.001 ? '🟡 Moderate' : '🔴 Poor'}
                      </div>
                    </div>
                    
@@ -3112,12 +2984,12 @@ const SpillEventsList: React.FC<{
                        <div 
                          className="gauge-fill memory-gauge"
                          style={{
-                           '--percentage': `${((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100)}%`,
+                           '--percentage': `${(((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100)}%`,
                            '--color': '#3b82f6'
                          } as React.CSSProperties}
                        ></div>
                        <div className="gauge-center">
-                         <div className="gauge-value">{((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100).toFixed(1)}%</div>
+                         <div className="gauge-value">{(((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(1)}%</div>
                          <div className="gauge-unit">memory ops</div>
                        </div>
                      </div>
@@ -3133,12 +3005,12 @@ const SpillEventsList: React.FC<{
                        <div 
                          className="gauge-fill register-gauge"
                          style={{
-                           '--percentage': `${Math.min(100, ((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions * 100))}%`,
+                           '--percentage': `${Math.min(100, (((metrics?.int_reg_reads || 0) + (metrics?.fp_reg_reads || 0)) / (metrics?.total_instructions || 1) * 100))}%`,
                            '--color': '#8b5cf6'
                          } as React.CSSProperties}
                        ></div>
                        <div className="gauge-center">
-                         <div className="gauge-value">{((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions * 100).toFixed(1)}%</div>
+                         <div className="gauge-value">{(((metrics?.int_reg_reads || 0) + (metrics?.fp_reg_reads || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(1)}%</div>
                          <div className="gauge-unit">register ops</div>
                        </div>
                      </div>
@@ -3159,13 +3031,13 @@ const SpillEventsList: React.FC<{
                    <div className="card-content">
                      <div className="performance-score">
                        <div className="score-circle">
-                         <div className="score-value">{Math.max(0, Math.min(100, 100 - (metrics.cpi / 200) * 100)).toFixed(0)}</div>
+                         <div className="score-value">{Math.max(0, Math.min(100, 100 - ((metrics?.cpi || 0) / 200) * 100)).toFixed(0)}</div>
                          <div className="score-label">Score</div>
                        </div>
                      </div>
                      <div className="performance-details">
-                       <p><strong>Status:</strong> {metrics.cpi > 100 ? 'Critical Performance' : metrics.cpi > 50 ? 'Moderate Performance' : 'Good Performance'}</p>
-                       <p><strong>Bottleneck:</strong> {metrics.cpi > 100 ? 'High CPI indicates pipeline stalls' : 'Memory or register pressure'}</p>
+                       <p><strong>Status:</strong> {(metrics?.cpi || 0) > 100 ? 'Critical Performance' : (metrics?.cpi || 0) > 50 ? 'Moderate Performance' : 'Good Performance'}</p>
+                       <p><strong>Bottleneck:</strong> {(metrics?.cpi || 0) > 100 ? 'High CPI indicates pipeline stalls' : 'Memory or register pressure'}</p>
                      </div>
                    </div>
                  </div>
@@ -3179,21 +3051,22 @@ const SpillEventsList: React.FC<{
                      <div className="efficiency-metrics">
                        <div className="efficiency-item">
                          <span className="efficiency-label">Memory:</span>
-                         <span className="efficiency-value">{((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100).toFixed(1)}%</span>
+                         <span className="efficiency-value">{(((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(1)}%</span>
                        </div>
                        <div className="efficiency-item">
                          <span className="efficiency-label">Register:</span>
-                         <span className="efficiency-value">{((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions * 100).toFixed(1)}%</span>
+                         <span className="efficiency-value">{(((metrics?.int_reg_reads || 0) + (metrics?.fp_reg_reads || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(1)}%</span>
                        </div>
                        <div className="efficiency-item">
                          <span className="efficiency-label">Compute:</span>
-                         <span className="efficiency-value">{(100 - ((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100)).toFixed(1)}%</span>
+                         <span className="efficiency-value">{(100 - (((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100)).toFixed(1)}%</span>
                        </div>
                      </div>
                    </div>
                  </div>
                </div>
-             </div>
+               </>
+             )}
            </main>
          </div>
 
@@ -3217,19 +3090,19 @@ const SpillEventsList: React.FC<{
                      <div className="memory-stat">
                        <span className="memory-label">Read Requests:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.mem_ctrls.readReqs'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.mem_ctrls.readReqs'] || 0)}
                        </span>
                   </div>
                      <div className="memory-stat">
                        <span className="memory-label">Write Requests:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.mem_ctrls.writeReqs'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.mem_ctrls.writeReqs'] || 0)}
                        </span>
                            </div>
                      <div className="memory-stat">
                        <span className="memory-label">Total Requests:</span>
                        <span className="memory-value">
-                         {formatNumber((memorySystemStats['system.mem_ctrls.readReqs'] || 0) + (memorySystemStats['system.mem_ctrls.writeReqs'] || 0))}
+                         {formatNumber((memorySystemStats?.['system.mem_ctrls.readReqs'] || 0) + (memorySystemStats?.['system.mem_ctrls.writeReqs'] || 0))}
                        </span>
                              </div>
                                </div>
@@ -3239,19 +3112,19 @@ const SpillEventsList: React.FC<{
                      <div className="memory-stat">
                        <span className="memory-label">Read Bursts:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.mem_ctrls.readBursts'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.mem_ctrls.readBursts'] || 0)}
                        </span>
                                </div>
                      <div className="memory-stat">
                        <span className="memory-label">Write Bursts:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.mem_ctrls.writeBursts'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.mem_ctrls.writeBursts'] || 0)}
                        </span>
                                </div>
                      <div className="memory-stat">
                        <span className="memory-label">Total Bursts:</span>
                        <span className="memory-value">
-                         {formatNumber((memorySystemStats['system.mem_ctrls.readBursts'] || 0) + (memorySystemStats['system.mem_ctrls.writeBursts'] || 0))}
+                         {formatNumber((memorySystemStats?.['system.mem_ctrls.readBursts'] || 0) + (memorySystemStats?.['system.mem_ctrls.writeBursts'] || 0))}
                        </span>
                                </div>
                                </div>
@@ -3261,13 +3134,13 @@ const SpillEventsList: React.FC<{
                      <div className="memory-stat">
                        <span className="memory-label">Avg Read Queue:</span>
                        <span className="memory-value">
-                         {(memorySystemStats['system.mem_ctrls.avgRdQLen'] || 0).toFixed(2)}
+                         {(memorySystemStats?.['system.mem_ctrls.avgRdQLen'] || 0).toFixed(2)}
                        </span>
                              </div>
                      <div className="memory-stat">
                        <span className="memory-label">Avg Write Queue:</span>
                        <span className="memory-value">
-                         {(memorySystemStats['system.mem_ctrls.avgWrQLen'] || 0).toFixed(2)}
+                         {(memorySystemStats?.['system.mem_ctrls.avgWrQLen'] || 0).toFixed(2)}
                        </span>
                            </div>
                    </div>
@@ -3280,25 +3153,25 @@ const SpillEventsList: React.FC<{
                      <div className="memory-stat">
                        <span className="memory-label">Read Accesses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.dtb.rdAccesses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.dtb.rdAccesses'] || 0)}
                        </span>
                           </div>
                      <div className="memory-stat">
                        <span className="memory-label">Write Accesses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.dtb.wrAccesses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.dtb.wrAccesses'] || 0)}
                        </span>
                         </div>
                      <div className="memory-stat">
                        <span className="memory-label">Read Misses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.dtb.rdMisses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.dtb.rdMisses'] || 0)}
                        </span>
                     </div>
                      <div className="memory-stat">
                        <span className="memory-label">Write Misses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.dtb.wrMisses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.dtb.wrMisses'] || 0)}
                        </span>
                   </div>
                 </div>
@@ -3308,25 +3181,25 @@ const SpillEventsList: React.FC<{
                      <div className="memory-stat">
                        <span className="memory-label">Read Accesses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.itb.rdAccesses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.itb.rdAccesses'] || 0)}
                        </span>
                      </div>
                      <div className="memory-stat">
                        <span className="memory-label">Write Accesses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.itb.wrAccesses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.itb.wrAccesses'] || 0)}
                        </span>
                      </div>
                      <div className="memory-stat">
                        <span className="memory-label">Read Misses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.itb.rdMisses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.itb.rdMisses'] || 0)}
                        </span>
                        </div>
                      <div className="memory-stat">
                        <span className="memory-label">Write Misses:</span>
                        <span className="memory-value">
-                         {formatNumber(memorySystemStats['system.cpu.mmu.itb.wrMisses'] || 0)}
+                         {formatNumber(memorySystemStats?.['system.cpu.mmu.itb.wrMisses'] || 0)}
                        </span>
                      </div>
                    </div>
@@ -3336,9 +3209,9 @@ const SpillEventsList: React.FC<{
                    <h3>Memory System Summary</h3>
                    <p>
                      Memory System Performance:<br/>
-                     Total memory requests: {formatNumber((memorySystemStats['system.mem_ctrls.readReqs'] || 0) + (memorySystemStats['system.mem_ctrls.writeReqs'] || 0))}<br/>
-                     Total TLB accesses: {formatNumber((memorySystemStats['system.cpu.mmu.dtb.rdAccesses'] || 0) + (memorySystemStats['system.cpu.mmu.dtb.wrAccesses'] || 0) + (memorySystemStats['system.cpu.mmu.itb.rdAccesses'] || 0) + (memorySystemStats['system.cpu.mmu.itb.wrAccesses'] || 0))}<br/>
-                     Total TLB misses: {formatNumber((memorySystemStats['system.cpu.mmu.dtb.rdMisses'] || 0) + (memorySystemStats['system.cpu.mmu.dtb.wrMisses'] || 0) + (memorySystemStats['system.cpu.mmu.itb.rdMisses'] || 0) + (memorySystemStats['system.cpu.mmu.itb.wrMisses'] || 0))}
+                     Total memory requests: {formatNumber((memorySystemStats?.['system.mem_ctrls.readReqs'] || 0) + (memorySystemStats?.['system.mem_ctrls.writeReqs'] || 0))}<br/>
+                     Total TLB accesses: {formatNumber((memorySystemStats?.['system.cpu.mmu.dtb.rdAccesses'] || 0) + (memorySystemStats?.['system.cpu.mmu.dtb.wrAccesses'] || 0) + (memorySystemStats?.['system.cpu.mmu.itb.rdAccesses'] || 0) + (memorySystemStats?.['system.cpu.mmu.itb.wrAccesses'] || 0))}<br/>
+                     Total TLB misses: {formatNumber((memorySystemStats?.['system.cpu.mmu.dtb.rdMisses'] || 0) + (memorySystemStats?.['system.cpu.mmu.dtb.wrMisses'] || 0) + (memorySystemStats?.['system.cpu.mmu.itb.rdMisses'] || 0) + (memorySystemStats?.['system.cpu.mmu.itb.wrMisses'] || 0))}
                    </p>
                  </div>
                </div>
@@ -3349,228 +3222,16 @@ const SpillEventsList: React.FC<{
          {/* Spacing between sections */}
          <div className="section-spacer"></div>
 
-         {/* Seventh Section - Memory Heatmap Analysis */}
+
+         {/* Eighth Section - Dynamic vs Static Instruction Analysis */}
          <div className="content-section">
            <header className="App-header">
-             <h1>🔥 Memory Heatmap Analysis</h1>
-             <p>Thermal visualization of memory usage patterns and register hotspots</p>
+             <h1>⚡ Dynamic vs Static Instruction Analysis</h1>
+             <p>Comprehensive instruction analysis with thermal visualization</p>
            </header>
            
            <main className="container">
              <div className="analysis-section">
-               {/* Memory Access Heatmap */}
-               <div className="heatmap-section">
-                 <h2>🌡️ Memory Access Heatmap</h2>
-                 <div className="heatmap-container">
-                   <div className="heatmap-grid">
-                     {memorySystemStats && (() => {
-                       const maxValue = Math.max(
-                         memorySystemStats['system.mem_ctrls.readReqs'] || 0,
-                         memorySystemStats['system.mem_ctrls.writeReqs'] || 0,
-                         memorySystemStats['system.cpu.mmu.dtb.rdAccesses'] || 0,
-                         memorySystemStats['system.cpu.mmu.dtb.wrAccesses'] || 0
-                       );
-                       
-                       const memoryRegions = [
-                         { name: 'Memory Read Reqs', value: memorySystemStats['system.mem_ctrls.readReqs'] || 0, type: 'memory' },
-                         { name: 'Memory Write Reqs', value: memorySystemStats['system.mem_ctrls.writeReqs'] || 0, type: 'memory' },
-                         { name: 'Memory Read Bursts', value: memorySystemStats['system.mem_ctrls.readBursts'] || 0, type: 'memory' },
-                         { name: 'Memory Write Bursts', value: memorySystemStats['system.mem_ctrls.writeBursts'] || 0, type: 'memory' },
-                         { name: 'DTLB Read Access', value: memorySystemStats['system.cpu.mmu.dtb.rdAccesses'] || 0, type: 'tlb' },
-                         { name: 'DTLB Write Access', value: memorySystemStats['system.cpu.mmu.dtb.wrAccesses'] || 0, type: 'tlb' },
-                         { name: 'ITLB Read Access', value: memorySystemStats['system.cpu.mmu.itb.rdAccesses'] || 0, type: 'tlb' },
-                         { name: 'ITLB Write Access', value: memorySystemStats['system.cpu.mmu.itb.wrAccesses'] || 0, type: 'tlb' }
-                       ];
-                       
-                       return memoryRegions.map((region, index) => {
-                         const intensity = maxValue > 0 ? (region.value / maxValue) * 100 : 0;
-                         const temperature = Math.min(intensity, 100);
-                         
-                         // Thermal color mapping (cold to hot)
-                         let color;
-                         if (temperature < 20) {
-                           color = '#1e3a8a'; // Deep blue (cold)
-                         } else if (temperature < 40) {
-                           color = '#3b82f6'; // Blue
-                         } else if (temperature < 60) {
-                           color = '#10b981'; // Green
-                         } else if (temperature < 80) {
-                           color = '#f59e0b'; // Orange
-                         } else {
-                           color = '#ef4444'; // Red (hot)
-                         }
-                         
-                         return (
-                           <div 
-                             key={index}
-                             className="heatmap-cell"
-                             style={{
-                               backgroundColor: color,
-                               opacity: 0.8 + (temperature / 100) * 0.2,
-                               boxShadow: `0 0 ${temperature / 10}px ${color}`,
-                               animationDelay: `${index * 0.1}s`
-                             }}
-                             title={`${region.name}: ${formatNumber(region.value)} (${temperature.toFixed(1)}% intensity)`}
-                           >
-                             <div className="heatmap-label">{region.name}</div>
-                             <div className="heatmap-value">{formatNumber(region.value)}</div>
-                             <div className="heatmap-temperature">{temperature.toFixed(1)}°</div>
-                           </div>
-                         );
-                       });
-                     })()}
-                   </div>
-                 </div>
-                 
-                 {/* Register Usage Heatmap */}
-                 <h2>🔥 Register Usage Heatmap</h2>
-                 <div className="heatmap-container">
-                   <div className="register-heatmap-grid">
-                     {metrics && (() => {
-                       const maxRegValue = Math.max(
-                         metrics.int_reg_reads,
-                         metrics.int_reg_writes,
-                         metrics.fp_reg_reads,
-                         metrics.fp_reg_writes
-                       );
-                       
-                       const registerTypes = [
-                         { name: 'Int Reads', value: metrics.int_reg_reads, type: 'integer' },
-                         { name: 'Int Writes', value: metrics.int_reg_writes, type: 'integer' },
-                         { name: 'Float Reads', value: metrics.fp_reg_reads, type: 'float' },
-                         { name: 'Float Writes', value: metrics.fp_reg_writes, type: 'float' }
-                       ];
-                       
-                       return registerTypes.map((reg, index) => {
-                         const intensity = maxRegValue > 0 ? (reg.value / maxRegValue) * 100 : 0;
-                         const temperature = Math.min(intensity, 100);
-                         
-                         // Different color scheme for registers
-                         let color;
-                         if (temperature < 25) {
-                           color = '#1e40af'; // Deep blue
-                         } else if (temperature < 50) {
-                           color = '#2563eb'; // Blue
-                         } else if (temperature < 75) {
-                           color = '#7c3aed'; // Purple
-                         } else {
-                           color = '#dc2626'; // Red
-                         }
-                         
-                         return (
-                           <div 
-                             key={index}
-                             className="register-heatmap-cell"
-                             style={{
-                               backgroundColor: color,
-                               opacity: 0.7 + (temperature / 100) * 0.3,
-                               boxShadow: `0 0 ${temperature / 8}px ${color}, inset 0 0 ${temperature / 15}px rgba(255,255,255,0.3)`,
-                               animationDelay: `${index * 0.15}s`
-                             }}
-                             title={`${reg.name}: ${formatNumber(reg.value)} operations (${temperature.toFixed(1)}% intensity)`}
-                           >
-                             <div className="register-heatmap-icon">
-                               {reg.type === 'integer' ? '🔢' : '🔢'}
-                             </div>
-                             <div className="register-heatmap-label">{reg.name}</div>
-                             <div className="register-heatmap-value">{formatNumber(reg.value)}</div>
-                             <div className="register-heatmap-intensity">{temperature.toFixed(1)}%</div>
-                           </div>
-                         );
-                       });
-                     })()}
-                   </div>
-                 </div>
-                 
-                 {/* Thermal Legend */}
-                 <div className="thermal-legend">
-                   <h3>🌡️ Thermal Intensity Scale</h3>
-                   <div className="legend-scale">
-                     <div className="legend-item">
-                       <div className="legend-color" style={{backgroundColor: '#1e3a8a'}}></div>
-                       <span>Cold (0-20%)</span>
-                     </div>
-                     <div className="legend-item">
-                       <div className="legend-color" style={{backgroundColor: '#3b82f6'}}></div>
-                       <span>Cool (20-40%)</span>
-                     </div>
-                     <div className="legend-item">
-                       <div className="legend-color" style={{backgroundColor: '#10b981'}}></div>
-                       <span>Warm (40-60%)</span>
-                     </div>
-                     <div className="legend-item">
-                       <div className="legend-color" style={{backgroundColor: '#f59e0b'}}></div>
-                       <span>Hot (60-80%)</span>
-                     </div>
-                     <div className="legend-item">
-                       <div className="legend-color" style={{backgroundColor: '#ef4444'}}></div>
-                       <span>Very Hot (80-100%)</span>
-                     </div>
-                   </div>
-                 </div>
-                 
-                 {/* Heatmap Summary */}
-                 <div className="heatmap-summary">
-                   <h3>🔥 Heatmap Analysis Summary</h3>
-                   <div className="summary-grid">
-                     <div className="summary-card">
-                       <h4>🌡️ Hottest Memory Region</h4>
-                       <p>
-                         {memorySystemStats && (() => {
-                           const regions = [
-                             { name: 'Memory Read Requests', value: memorySystemStats['system.mem_ctrls.readReqs'] || 0 },
-                             { name: 'Memory Write Requests', value: memorySystemStats['system.mem_ctrls.writeReqs'] || 0 },
-                             { name: 'DTLB Read Access', value: memorySystemStats['system.cpu.mmu.dtb.rdAccesses'] || 0 },
-                             { name: 'DTLB Write Access', value: memorySystemStats['system.cpu.mmu.dtb.wrAccesses'] || 0 }
-                           ];
-                           const hottest = regions.reduce((max, region) => region.value > max.value ? region : max);
-                           return `${hottest.name}: ${formatNumber(hottest.value)}`;
-                         })()}
-                       </p>
-                     </div>
-                     
-                     <div className="summary-card">
-                       <h4>🔥 Hottest Register Type</h4>
-                       <p>
-                         {metrics && (() => {
-                           const registers = [
-                             { name: 'Integer Reads', value: metrics.int_reg_reads },
-                             { name: 'Integer Writes', value: metrics.int_reg_writes },
-                             { name: 'Float Reads', value: metrics.fp_reg_reads },
-                             { name: 'Float Writes', value: metrics.fp_reg_writes }
-                           ];
-                           const hottest = registers.reduce((max, reg) => reg.value > max.value ? reg : max);
-                           return `${hottest.name}: ${formatNumber(hottest.value)}`;
-                         })()}
-                       </p>
-                     </div>
-                     
-                     <div className="summary-card">
-                       <h4>📊 Thermal Distribution</h4>
-                       <p>
-                         Memory regions show varying thermal patterns based on access frequency. 
-                         Hotter regions indicate higher usage and potential bottlenecks.
-                       </p>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </main>
-         </div>
-
-        {/* Spacing between sections */}
-        <div className="section-spacer"></div>
-
-        {/* Eighth Section - Dynamic vs Static Instruction Analysis */}
-        <div className="content-section">
-          <header className="App-header">
-            <h1>⚡ Dynamic vs Static Instruction Analysis</h1>
-            <p>Comprehensive instruction analysis with thermal visualization</p>
-          </header>
-          
-          <main className="container">
-            <div className="analysis-section">
               {/* Dynamic Analysis Heatmap */}
               <div className="heatmap-section">
                 <h2>🔄 Dynamic Instruction Analysis</h2>
@@ -3582,16 +3243,16 @@ const SpillEventsList: React.FC<{
                 <div className="heatmap-container">
                   <div className="dynamic-heatmap-grid">
                     {metrics && (() => {
-                      const dynamicMetrics = [
-                        { name: 'Total Instructions', value: metrics.total_instructions, type: 'instruction', color: '#3b82f6' },
-                        { name: 'Total Cycles', value: metrics.total_cycles, type: 'cycle', color: '#1d4ed8' },
-                        { name: 'CPI (Cycles/Inst)', value: Math.round(metrics.cpi), type: 'performance', color: '#ef4444' },
-                        { name: 'IPC (Inst/Cycle)', value: Math.round(metrics.ipc * 1000000), type: 'performance', color: '#10b981' },
-                        { name: 'Memory References', value: metrics.total_memory_refs, type: 'memory', color: '#f59e0b' },
-                        { name: 'Load Instructions', value: metrics.total_loads, type: 'memory', color: '#8b5cf6' },
-                        { name: 'Store Instructions', value: metrics.total_stores, type: 'memory', color: '#ec4899' },
-                        { name: 'Register Operations', value: metrics.int_reg_reads + metrics.fp_reg_reads + metrics.int_reg_writes + metrics.fp_reg_writes, type: 'register', color: '#06b6d4' }
-                      ];
+                        const dynamicMetrics = [
+                          { name: 'Total Instructions', value: metrics?.total_instructions || 0, type: 'instruction', color: '#3b82f6' },
+                          { name: 'Total Cycles', value: metrics?.total_cycles || 0, type: 'cycle', color: '#1d4ed8' },
+                          { name: 'CPI (Cycles/Inst)', value: Math.round(metrics?.cpi || 0), type: 'performance', color: '#ef4444' },
+                          { name: 'IPC (Inst/Cycle)', value: Math.round((metrics?.ipc || 0) * 1000000), type: 'performance', color: '#10b981' },
+                          { name: 'Memory References', value: metrics?.total_memory_refs || 0, type: 'memory', color: '#f59e0b' },
+                          { name: 'Load Instructions', value: metrics?.total_loads || 0, type: 'memory', color: '#8b5cf6' },
+                          { name: 'Store Instructions', value: metrics?.total_stores || 0, type: 'memory', color: '#ec4899' },
+                          { name: 'Register Operations', value: (metrics?.int_reg_reads || 0) + (metrics?.fp_reg_reads || 0) + (metrics?.int_reg_writes || 0) + (metrics?.fp_reg_writes || 0), type: 'register', color: '#06b6d4' }
+                        ];
                       
                       const maxValue = Math.max(...dynamicMetrics.map(m => m.value));
                       
@@ -3654,11 +3315,11 @@ const SpillEventsList: React.FC<{
                 <div className="heatmap-container">
                   <div className="static-heatmap-grid">
                     {instructionTypes && (() => {
-                      const staticMetrics = Object.entries(instructionTypes.instruction_types)
+                      const staticMetrics = Object.entries(instructionTypes?.instruction_types || {})
                         .sort(([,a], [,b]) => b.count - a.count)
                         .slice(0, 12) // Top 12 instruction types
                         .map(([type, data], index) => {
-                          const intensity = instructionTypes.total_instructions > 0 ? (data.count / instructionTypes.total_instructions) * 100 : 0;
+                          const intensity = (instructionTypes?.total_instructions || 0) > 0 ? (data.count / (instructionTypes?.total_instructions || 1)) * 100 : 0;
                           const temperature = Math.min(intensity * 10, 100); // Scale for better visualization
                           
                           // Static-specific color mapping
@@ -3723,11 +3384,11 @@ const SpillEventsList: React.FC<{
                       <ul>
                         <li>CPI: {metrics?.cpi.toFixed(2)} (çok yüksek!)</li>
                         <li>IPC: {metrics?.ipc.toFixed(6)} (çok düşük!)</li>
-                        <li>Memory Intensity: {metrics ? ((metrics.total_loads + metrics.total_stores) / metrics.total_instructions * 100).toFixed(1) : 0}%</li>
-                        <li>Register Intensity: {metrics ? ((metrics.int_reg_reads + metrics.fp_reg_reads) / metrics.total_instructions * 100).toFixed(1) : 0}%</li>
-                 </ul>
-                   </div>
-                 </div>
+                        <li>Memory Intensity: {metrics ? (((metrics?.total_loads || 0) + (metrics?.total_stores || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(1) : 0}%</li>
+                        <li>Register Intensity: {metrics ? (((metrics?.int_reg_reads || 0) + (metrics?.fp_reg_reads || 0)) / (metrics?.total_instructions || 1) * 100).toFixed(1) : 0}%</li>
+                      </ul>
+                    </div>
+                  </div>
                   
                   <div className="comparison-card static-card">
                     <div className="comparison-header">
@@ -3740,7 +3401,7 @@ const SpillEventsList: React.FC<{
                       <p><strong>Key Insights:</strong></p>
                       <ul>
                         <li>Architecture: {instructionTypes?.architecture}</li>
-                        <li>Total Instructions: {instructionTypes ? formatNumber(instructionTypes.total_instructions) : 0}</li>
+                        <li>Total Instructions: {instructionTypes ? formatNumber(instructionTypes?.total_instructions || 0) : 0}</li>
                         <li>Integer Operations: {instructionTypes?.instruction_types.IntAlu?.percentage || 0}%</li>
                         <li>Float Operations: {instructionTypes?.instruction_types.FloatAdd?.percentage || 0}%</li>
                       </ul>
@@ -3788,14 +3449,14 @@ const SpillEventsList: React.FC<{
            </main>
          </div>
 
-        {/* Spacing between sections */}
-        <div className="section-spacer"></div>
+         {/* Spacing between sections */}
+         <div className="section-spacer"></div>
 
-      </div>
-      
-      {/* Scroll indicators removed - using normal scroll now */}
+       </div>
+       
+       {/* Scroll indicators removed - using normal scroll now */}
 
-    </div>
+     </div>
   );
 }
 

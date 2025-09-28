@@ -2040,7 +2040,7 @@
 
 .heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin: 1.5rem 0;
 }
@@ -2049,12 +2049,13 @@
   background: var(--card-bg);
   border: 2px solid var(--border);
   border-radius: 12px;
-  padding: 2rem;
+  padding: 2.5rem;
   text-align: center;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
   animation: heatmapPulse 2s ease-in-out infinite;
+  min-height: 160px;
 }
 
 .heatmap-cell:hover {
@@ -6304,4 +6305,61 @@
 .dark-theme .histogram-label,
 .dark-theme .histogram-percentage {
   color: var(--dark-text);
+}
+
+/* Spill Visualization Section */
+.spill-visualization-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 4px 6px var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.spill-visualization-section h3 {
+  color: var(--text);
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.graphs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.graph-item {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 8px var(--shadow);
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.graph-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow);
+}
+
+.graph-item h4 {
+  color: var(--text);
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.graph-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow);
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
 }
