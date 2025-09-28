@@ -32,9 +32,16 @@ A modern web-based gem5 simulation analyzer with React frontend and Flask backen
 
 2. **Backend setup**:
    ```bash
+   # Create and activate virtual environment
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+   # Install dependencies
    cd backend
    pip install -r requirements.txt
-   python app.py
+   
+   # Run the backend server
+   python simple_app.py
    ```
 
 3. **Frontend setup** (in a new terminal):
@@ -46,15 +53,46 @@ A modern web-based gem5 simulation analyzer with React frontend and Flask backen
 
 4. **Open your browser** and go to:
    ```
-   http://localhost:3000
+   http://localhost:8080
    ```
+
+### 🎯 How to Run the Program
+
+**Step 1: Start the Backend**
+```bash
+# In the project root directory
+source venv/bin/activate  # Activate virtual environment
+cd backend
+python simple_app.py
+```
+
+You should see:
+```
+🎮 Starting Simple Gem5 Analyzer...
+✅ All data loaded successfully
+🚀 Starting Simple Flask server...
+📊 Backend API: http://localhost:5050
+🎨 Frontend: http://localhost:8080
+```
+
+**Step 2: Start the Frontend** (in a new terminal)
+```bash
+cd frontend
+npm start
+```
+
+**Step 3: Access the Application**
+- Open your browser and go to: `http://localhost:8080`
+- The backend API will be available at: `http://localhost:5050`
+
+**Note**: Make sure the `m5out/` directory contains your gem5 simulation data files (`stats.txt`, `x86_spill_stats.txt`, etc.)
 
 ## 📁 File Structure
 
 ```
 Lyiv/
 ├── backend/                 # Flask backend
-│   ├── app.py              # Main Flask application
+│   ├── simple_app.py       # Main Flask application
 │   ├── requirements.txt    # Python dependencies
 │   ├── services/           # API services
 │   ├── utils/              # Data processing utilities
@@ -104,7 +142,7 @@ The web interface supports both light and dark themes:
 
 ### API Endpoints
 - `/api/basic-metrics` - Basic performance metrics
-- `/api/debug-stats` - Debug information
+- `/api/status` - Server status information
 
 ## 🔧 Technical Details
 
@@ -124,8 +162,8 @@ The web interface supports both light and dark themes:
 
 ### Common Issues
 
-1. **Backend Port Issues**: If port 5002 is busy, change it in `backend/app.py`
-2. **Frontend Port Issues**: If port 3000 is busy, React will suggest an alternative
+1. **Backend Port Issues**: If port 5050 is busy, change it in `backend/simple_app.py`
+2. **Frontend Port Issues**: If port 8080 is busy, change it in `frontend/package.json`
 3. **Data Loading**: Make sure `m5out/` directory exists with required files
 
 ### Performance Tips
