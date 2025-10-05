@@ -101,30 +101,35 @@ npm start
 
 ```
 Lyiv/
-├── 📂 backend/                    # Flask Backend Server
-│   ├── 📄 simple_app.py          # Main Flask application
-│   ├── 📄 requirements.txt       # Python dependencies
-│   ├── 📂 services/              # API service modules
-│   │   └── 📄 simple_api.py      # REST API endpoints
-│   ├── 📂 utils/                 # Data processing utilities
-│   │   └── 📄 simple_reader.py   # Gem5 data parser
-│   └── 📂 models/                # Data models and schemas
-├── 📂 frontend/                   # React Frontend Application
-│   ├── 📂 src/
-│   │   ├── 📄 App.tsx            # Main React component
-│   │   ├── 📄 App.css            # Application styles
-│   │   └── 📂 services/          # API client services
-│   │       └── 📄 api.ts         # HTTP client configuration
-│   ├── 📄 package.json           # Node.js dependencies
-│   └── 📂 public/                # Static assets
-├── 📂 m5out/                      # Gem5 Simulation Output
-│   ├── 📄 stats.txt              # Simulation statistics
-│   ├── 📄 x86_spill_stats.txt    # Register spill data
-│   └── 📄 config.json            # Simulation configuration
-├── 📂 images/                     # Project assets and images
-│   └── 📄 4419422.png            # Coffee latte pixel art
-├── 📄 README.md                   # Project documentation
-└── 📄 LICENSE                     # MIT License
+├── backend/                # Flask backend server
+│   ├── requirements.txt    # Python dependencies
+│   ├── simple_app.py       # Main Flask application
+│   ├── spill_visualization_generator.py # Spill chart generator
+│   ├── models/             # Data models
+│   ├── services/           # API service modules
+│   │   ├── simple_api.py   # REST API endpoints
+│   └── utils/              # Data processing utilities
+│       ├── api_helpers.py  # API helper functions
+│       ├── simple_reader.py # Gem5 spill log parser
+├── frontend/               # React frontend application
+│   ├── package.json        # Node.js dependencies
+│   ├── tsconfig.json       # TypeScript config
+│   ├── public/             # Static assets (images, index.html)
+│   └── src/                # Source code
+│       ├── App.tsx         # Main React component
+│       ├── services/       # API client services
+│           └── api.ts      # HTTP client configuration
+├── m5out/                  # Gem5 simulation output
+│   ├── stats.txt           # Simulation statistics
+│   ├── x86_spill_stats.txt # Register spill data
+│   ├── config.json         # Simulation configuration
+│   └── fs/                 # System info (cpuinfo, stat)
+├── images/                 # Project images and graphs
+│   ├── graphs/             # Chart images
+│   └── stuff/              # Misc images (coffyyy.png)
+├── run_lyiv.sh             # Automated startup script
+├── README.md               # Project documentation
+└── LICENSE                 # MIT License
 ```
 
 ## 🎮 Usage Guide
@@ -154,16 +159,24 @@ The application automatically loads and processes data from the `m5out/` directo
 - **Dynamic vs Static Analysis**: Comprehensive instruction type comparison
 
 ### Data Sources
+
 Each metric displays its data source and calculation method:
 
-| Metric | Source | Description |
-|--------|--------|-------------|
-| **Total Instructions** | `stats.txt` → `simInsts` | Total executed instructions |
-| **Total Ticks** | `stats.txt` → `simTicks` | Simulation time in ticks |
-| **Total Loads** | `stats.txt` → `system.cpu.commitStats0.numLoadInsts` | Memory load operations |
-| **Total Stores** | `stats.txt` → `system.cpu.commitStats0.numStoreInsts` | Memory store operations |
-| **Total Spills** | `x86_spill_stats.txt` | Register spill events |
-| **Percentages** | Calculated ratios | Performance efficiency metrics |
+| Metric                      | Source & API Endpoint                | Description                                      |
+|-----------------------------|--------------------------------------|--------------------------------------------------|
+| **Total Instructions**      | `stats.txt` → `/api/basic-metrics`   | Total executed instructions                      |
+| **Simulation Ticks**        | `stats.txt` → `/api/basic-metrics`   | Simulation time in ticks                         |
+| **Total Loads**             | `stats.txt` → `/api/basic-metrics`   | Memory load operations                           |
+| **Total Stores**            | `stats.txt` → `/api/basic-metrics`   | Memory store operations                          |
+| **Register Spills**         | `x86_spill_stats.txt` → `/api/spill-analysis` | Register spill events (full streaming analysis)   |
+| **Unique Memory Addresses** | `x86_spill_stats.txt` → `/api/spill-analysis` | Unique addresses involved in spills              |
+| **Unique Store PCs**        | `x86_spill_stats.txt` → `/api/spill-analysis` | Unique store program counters                    |
+| **Unique Load PCs**         | `x86_spill_stats.txt` → `/api/spill-analysis` | Unique load program counters                     |
+| **Spill Duration Stats**    | `x86_spill_stats.txt` → `/api/spill-analysis` | Min, max, avg spill durations                    |
+| **Sampled Chart Data**      | `x86_spill_stats.txt` → `/api/spill-analysis` | Reservoir sample for visualizations (10,000 max) |
+| **Cache Metrics**           | `stats.txt` → `/api/cache-metrics`   | L1/L2/L3 cache hit/miss rates                    |
+| **Instruction Mix**         | `stats.txt` → `/api/instruction-types` | Breakdown of instruction types                   |
+| **Efficiency Ratios**       | Calculated from `stats.txt`           | IPC, CPI, and other performance ratios           |
 
 ## 🎨 Customization
 
@@ -176,17 +189,22 @@ The application supports both light and dark themes with customizable color sche
 - **Glassmorphism Effects**: Modern frosted glass UI elements
 
 ### API Endpoints
+
 The backend provides a comprehensive REST API:
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/basic-metrics` | GET | Core performance metrics |
-| `/api/instruction-types` | GET | Instruction type breakdown |
-| `/api/memory-system` | GET | Memory subsystem statistics |
-| `/api/efficiency-metrics` | GET | Performance efficiency data |
-| `/api/cache-metrics` | GET | Cache performance analysis |
-| `/api/spill-analysis` | GET | Register spill analysis |
-| `/api/status` | GET | System status and health |
+| Endpoint                  | Method | Description                                                                                   |
+|---------------------------|--------|-----------------------------------------------------------------------------------------------|
+| `/api/basic-metrics`      | GET    | Core performance metrics from `stats.txt`                                                      |
+| `/api/instruction-types`  | GET    | Instruction type breakdown from `stats.txt`                                                    |
+| `/api/memory-system`      | GET    | Memory subsystem statistics from `stats.txt`                                                   |
+| `/api/efficiency-metrics` | GET    | Performance efficiency data (IPC, CPI, ratios) from `stats.txt`                                |
+| `/api/cache-metrics`      | GET    | Cache performance analysis (L1/L2/L3 hit/miss rates) from `stats.txt`                         |
+| `/api/spill-analysis`     | GET    | Register spill analysis: full stats + sampled chart data from `x86_spill_stats.txt`            |
+| `/api/spills/search`      | GET    | Streaming search over spill log (supports text, regex, wildcards, pagination)                  |
+| `/api/spills/count`       | GET    | Fast count of spills matching a filter (streaming, memory-safe)                                |
+| `/api/spills/sample`      | GET    | Reservoir sample of spill events for visualization (10,000 max)                                |
+| `/api/spills/range`       | GET    | Range queries over spill log (by offset, line, or time)                                        |
+| `/api/status`             | GET    | System status and health check                                                                |
 
 ### Configuration Options
 - **Port Configuration**: Modify ports in `backend/simple_app.py` and `frontend/package.json`
@@ -239,20 +257,26 @@ Lyiv is now optimized to handle **200 million+ spill records** efficiently!
 
 ### API Usage for Large Datasets
 
-- `/api/spill-analysis` - Auto sampling for large datasets, returns statistics, charts, and metadata
-- `/api/spills/search` - Paginated streaming search, supports offset/limit, regex, and wildcards
-- `/api/spills/count` - Fast counting with optional scan limit
-- `/api/spills/range` - Range queries with streaming
+
+- `/api/spill-analysis` — Returns full statistics (always accurate) and a sampled dataset for charts (auto-sampling for large files)
+- `/api/spills/search` — Streaming, paginated search with support for text, regex, wildcards, offset, and limit
+- `/api/spills/count` — Fast, memory-safe counting of spills matching any filter (streaming, no memory overhead)
+- `/api/spills/sample` — Returns a random reservoir sample of spill events (up to 10,000) for visualization
+- `/api/spills/range` — Range queries by offset, line, or time (streaming, efficient for large files)
 
 ### Configuration
 
-Adjust these parameters in `backend/utils/simple_reader.py`:
+You can tune performance and sampling behavior in `backend/utils/simple_reader.py`:
 
 ```python
-SAMPLE_SIZE = 10000      # Number of samples for analysis
-max_events = 50000       # Max events for full load
-LARGE_THRESHOLD = 100000 # When to use sampling
+SAMPLE_SIZE = 10000      # Number of events to sample for chart visualizations (used only for large datasets)
+max_events = 50000       # If total events ≤ max_events, load all events for analysis and charts (no sampling)
+LARGE_THRESHOLD = 100000 # If total events > LARGE_THRESHOLD, switch to sampling mode for charts
 ```
+Recommended values:
+- For very large datasets, reduce `SAMPLE_SIZE` for faster chart rendering
+- Increase `max_events` if you have more memory and want full analysis for larger files
+- Adjust `LARGE_THRESHOLD` to control when sampling is triggered
 
 ### Testing
 
@@ -262,28 +286,6 @@ Run the included test script:
 python test_optimization.py
 ```
 
-### Example Output
-
-```
-✅ All tests completed successfully!
-- Total spills: 200,000,000
-- Sampled: True
-- Sample size: 10,000
-- Processing time: 45.23s
-```
-
-### Best Practices
-
-- For small datasets (<100k): Full loading, all features enabled
-- For large datasets (>100k): Sampling mode, accurate statistics, limited chart data
-- For massive datasets (>100M): Use search/count endpoints, process in chunks if needed
-
-### Troubleshooting
-
-- **Memory issues**: Reduce `SAMPLE_SIZE` to 5000
-- **Slow processing**: Increase `LARGE_THRESHOLD` to 200000
-- **Accuracy concerns**: Increase `SAMPLE_SIZE` to 20000
-- **Backend not starting**: Check port 5050 is not in use
 
 ### Documentation
 
@@ -314,34 +316,12 @@ lsof -ti:8080 | xargs kill -9
 - **Node Modules**: Run `npm install` after cloning repository
 - **Dependencies**: Update packages with `pip install -r requirements.txt`
 
-### Performance Optimization Tips
-- **Browser Developer Tools**: Use for debugging and performance analysis
-- **Network Tab**: Monitor API requests and response times
-- **Console Logs**: Check for JavaScript errors and warnings
-- **Data Refresh**: Reload page if data appears stale
 
 ### Getting Help
 - **Check Logs**: Review backend console output for error messages
 - **API Testing**: Use `curl` or Postman to test API endpoints directly
 - **Browser Console**: Inspect frontend errors and network requests
 
-## 🤝 Contributing
-
-We welcome contributions to improve Lyiv! Here are some areas where you can help:
-
-### 🚀 Feature Development
-- **New Visualization Types**: Add more chart types and data representations
-- **Additional API Endpoints**: Extend backend functionality
-- **UI/UX Improvements**: Enhance user interface and experience
-- **Performance Optimizations**: Improve data processing and rendering speed
-- **Heatmap Enhancements**: Add more thermal visualization features
-- **Advanced Analytics**: Implement machine learning-based performance predictions
-
-### 🐛 Bug Fixes & Improvements
-- **Error Handling**: Better error messages and recovery mechanisms
-- **Code Quality**: Refactoring and code organization improvements
-- **Documentation**: Improve code comments and documentation
-- **Testing**: Add unit tests and integration tests
 
 ### 📋 How to Contribute
 1. **Fork the repository** and create a feature branch
@@ -359,248 +339,6 @@ We welcome contributions to improve Lyiv! Here are some areas where you can help
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- **Gem5 Simulator**: For providing the simulation framework
-- **React Community**: For the excellent frontend ecosystem
-- **Flask Team**: For the lightweight Python web framework
-- **Contributors**: Thanks to all who have contributed to this project
-
-## 📝 Recent Updates
-
-### Version 2.1.0 (Latest)
-- ✅ **Removed Memory Access Heatmap** - Simplified interface by removing redundant memory visualization
-- ✅ **Enhanced Register Usage Heatmap** - Improved thermal visualization for register access patterns
-- ✅ **Fixed JSX Syntax Errors** - Resolved compilation issues and improved code structure
-- ✅ **Updated Documentation** - Enhanced README with latest features and improvements
-- ✅ **Code Optimization** - Streamlined component structure and improved performance
-
-### Previous Versions
-- **v2.0.0**: Added thermal heatmap visualizations and dynamic instruction analysis
-- **v1.5.0**: Implemented register spill analysis and memory system statistics
-- **v1.0.0**: Initial release with basic gem5 simulation analysis features
-
-## 🚀 Next Steps (Development Notes) for me :)
-
-### 📊 SQL Database Integration for Instruction-Level Analysis
-
-**Goal**: Create a comprehensive SQL database to store all gem5 instruction-level data for dynamic analysis.
-
-#### 🗄️ Proposed Database Schema
-
-```sql
--- Main instructions table
-CREATE TABLE instructions (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    instruction_id BIGINT NOT NULL,
-    is_spill BOOLEAN DEFAULT FALSE,
-    instruction_type VARCHAR(50),
-    instruction_name VARCHAR(100),
-    store_pc BIGINT,
-    load_pc BIGINT,
-    execution_cycle BIGINT,
-    commit_cycle BIGINT,
-    fetch_cycle BIGINT,
-    decode_cycle BIGINT,
-    issue_cycle BIGINT,
-    writeback_cycle BIGINT,
-    cpu_id INT DEFAULT 0,
-    thread_id INT DEFAULT 0,
-    sequence_number BIGINT,
-    opcode VARCHAR(20),
-    num_dest_regs INT,
-    num_src_regs INT,
-    memory_address BIGINT,
-    memory_size INT,
-    is_memory_op BOOLEAN DEFAULT FALSE,
-    is_branch BOOLEAN DEFAULT FALSE,
-    is_control BOOLEAN DEFAULT FALSE,
-    branch_target BIGINT,
-    branch_taken BOOLEAN,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Register usage tracking
-CREATE TABLE register_usage (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    instruction_id BIGINT,
-    register_name VARCHAR(20),
-    register_type ENUM('integer', 'float', 'vector', 'control'),
-    operation_type ENUM('read', 'write', 'spill', 'restore'),
-    register_value BIGINT,
-    spill_address BIGINT,
-    FOREIGN KEY (instruction_id) REFERENCES instructions(id)
-);
-
--- Memory access tracking
-CREATE TABLE memory_access (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    instruction_id BIGINT,
-    access_type ENUM('load', 'store', 'prefetch'),
-    memory_address BIGINT,
-    memory_size INT,
-    cache_level ENUM('L1', 'L2', 'L3', 'main_memory'),
-    hit_miss ENUM('hit', 'miss'),
-    latency_cycles INT,
-    FOREIGN KEY (instruction_id) REFERENCES instructions(id)
-);
-
--- Performance metrics per instruction
-CREATE TABLE instruction_metrics (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    instruction_id BIGINT,
-    cpi DECIMAL(10,4),
-    ipc DECIMAL(10,4),
-    stall_cycles INT,
-    dependency_cycles INT,
-    cache_miss_penalty INT,
-    branch_misprediction_penalty INT,
-    FOREIGN KEY (instruction_id) REFERENCES instructions(id)
-);
-
--- Indexes for performance
-CREATE INDEX idx_instruction_id ON instructions(instruction_id);
-CREATE INDEX idx_is_spill ON instructions(is_spill);
-CREATE INDEX idx_instruction_type ON instructions(instruction_type);
-CREATE INDEX idx_execution_cycle ON instructions(execution_cycle);
-CREATE INDEX idx_memory_address ON instructions(memory_address);
-CREATE INDEX idx_register_usage_instruction ON register_usage(instruction_id);
-CREATE INDEX idx_memory_access_instruction ON memory_access(instruction_id);
-```
-
-#### 🔧 Implementation Plan
-
-1. **Data Parser Enhancement**
-   - Extend `simple_reader.py` to parse instruction-level data
-   - Add SQLite/PostgreSQL integration
-   - Create data insertion pipeline
-
-2. **Backend API Extensions**
-   - Add endpoints for instruction-level queries
-   - Implement complex analytics queries
-   - Add real-time data streaming
-
-3. **Frontend Analytics Dashboard**
-   - Instruction timeline visualization
-   - Register usage heatmaps
-   - Memory access pattern analysis
-   - Performance bottleneck identification
-
-4. **Advanced Analytics Features**
-   - Machine learning-based performance prediction
-   - Anomaly detection in instruction patterns
-   - Comparative analysis between different runs
-   - Interactive query builder
-
-#### 📈 Expected Benefits
-
-- **Granular Analysis**: Instruction-by-instruction performance tracking
-- **Pattern Recognition**: Identify recurring performance issues
-- **Optimization Insights**: Data-driven optimization recommendations
-- **Scalability**: Handle large simulation datasets efficiently
-- **Flexibility**: Custom queries for specific research questions
-
-#### 🎯 Key Metrics to Track
-
-- Instruction execution patterns
-- Register spill frequency and patterns
-- Memory access locality
-- Branch prediction accuracy
-- Cache performance per instruction
-- Pipeline stall analysis
-- Dependency chain visualization
-
-# Lyiv Performance Optimization Summary
-
-## 🚀 Optimization for Large-Scale Spill Data (200M+ Records)
-
-### Problem
-The original implementation loaded **all spill events into memory**, which caused:
-- Memory exhaustion with 200M+ spill records
-- Extremely slow processing times
-- Potential system crashes
-- Unresponsive API endpoints
-
-### Solution: Streaming + Sampling Architecture
-
-#### 1. **Streaming-First Approach**
-- Files are now processed line-by-line without loading entire content into memory
-- Fast counting pass to determine dataset size
-- Memory-efficient iteration using generators
-
-#### 2. **Adaptive Strategy**
-```python
-if total_spills > 100,000:
-    # Use reservoir sampling (10k samples)
-    use_sampling_mode()
-else:
-    # Load all events (datasets under 100k are manageable)
-    use_full_loading()
-```
-
-#### 3. **Reservoir Sampling Algorithm**
-- Samples 10,000 representative events from 200M+ dataset
-- Statistically valid representation of the full dataset
-- O(n) time complexity, O(1) space complexity
-- Computes statistics during streaming (avg, min, max) without storing all events
-
-#### 4. **Optimized Chart Generation**
-- Limited to 1,000 data points max for visualizations
-- Removes complex nested operations
-- Pre-aggregated data for frontend consumption
-
-### Key Optimizations
-
-#### Before (Original Code)
-```python
-# ❌ Loads ALL events into memory
-def parse_spill_log(self, spill_log_path: str):
-    spill_events = []
-    with open(spill_log_path, 'r') as f:
-        for line in f:
-            # Parse and append ALL events
-            spill_events.append(event)  # 200M items in memory!
-    return spill_events  # Returns entire list
-```
-
-#### After (Optimized Code)
-```python
-# ✅ Streams data with memory limits
-def get_spill_analysis_data(self):
-    # Fast count first
-    total_spills = self._count_total_spills_streaming(file)
-    
-    if total_spills > 100_000:
-        # Reservoir sampling: only 10k in memory
-        return self._get_spill_analysis_sampled(file, total_spills)
-    else:
-        # Safe to load all for small datasets
-        return self._get_spill_analysis_full(file, total_spills)
-```
-
-### Performance Improvements
-
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Memory Usage (200M spills) | ~40GB+ | ~100MB | **400x reduction** |
-| Processing Time | Hours/Timeout | ~30-60s | **>100x faster** |
-| Chart Data Points | 200M | 1,000 | **200,000x reduction** |
-| API Response Time | Timeout | <2s | **∞ improvement** |
-
-### Features Removed/Modified
-
-#### Removed for Performance
-1. **Full dataset loading** for large files
-2. **Complex nested scatter plots** with all data points
-3. **Memory address hex conversion** for all events
-4. **Detailed per-event chart generation**
-
-#### Kept with Optimizations
-1. ✅ **Statistics** (avg, min, max, count) - computed during streaming
-2. ✅ **Duration distribution** - histogram from sample
-3. ✅ **PC pattern analysis** - top 10 patterns only
-4. ✅ **Scatter plots** - limited to 1k points
-5. ✅ **Unique value tracking** - sampled estimation
 
 ### API Endpoints Still Functional
 
@@ -612,6 +350,8 @@ All streaming endpoints remain fully functional:
 ### Configuration
 
 You can adjust sampling parameters in `simple_reader.py`:
+
+🛑 Please note that the following parameters are set only for visual graphics and do not affect the accuracy of the core statistics, which are always computed from the full dataset. 🛑
 
 ```python
 # Line ~1175: Adjust sample size
@@ -636,20 +376,6 @@ print(f"Total spills: {analysis['spill_count']:,}")
 print(f"Sampled: {analysis['sampled']}")
 print(f"Processing time: {analysis['performance']['processing_time_seconds']}s")
 ```
-
-### Testing Recommendations
-
-1. **Small datasets (<100k)**: Full functionality, all features enabled
-2. **Medium datasets (100k-1M)**: Sampling mode, fast processing
-3. **Large datasets (>1M)**: Optimized sampling, statistical accuracy maintained
-
-### Future Enhancements (Optional)
-
-1. **Database backend**: SQLite/PostgreSQL for indexing and queries
-2. **Chunked processing**: Process in chunks with progress reporting
-3. **Caching layer**: Redis for frequently accessed statistics
-4. **Parallel processing**: Multi-threaded parsing for even faster analysis
-5. **Incremental loading**: Progressive data loading in frontend
 
 
 ---
@@ -683,6 +409,13 @@ Do you want to proceed and run backend & frontend? (y/n):
 ```
 
 This script streamlines the workflow for quickly setting up and running Lyiv with your latest gem5 simulation data.
+
+
+
+## 🤝 Contributing
+
+We welcome contributions to improve Lyiv! Here are some areas where you can help:
+
 
 ---
 
