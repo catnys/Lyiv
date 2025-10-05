@@ -233,27 +233,6 @@ The backend provides a comprehensive REST API:
 3. **API Layer**: RESTful endpoints for data access
 4. **Frontend Rendering**: Interactive visualizations and dashboards
 
-### Performance Optimizations
-
-## 🚀 Large-Scale Spill Data Performance Optimization
-
-Lyiv is now optimized to handle **200 million+ spill records** efficiently!
-
-### Key Backend Optimizations
-
-- **Streaming Architecture**: Line-by-line file reading, O(1) memory usage
-- **Reservoir Sampling**: 10,000 representative samples for large datasets
-- **Adaptive Strategy**: Automatically detects dataset size and chooses optimal processing (full load for <100k, sampling for >100k)
-- **Memory-Safe APIs**: All endpoints use streaming for pagination and search
-- **Limited Visualization Data**: Chart data capped at 1,000 points for frontend performance
-
-### Performance Benchmarks
-
-| Metric                | Before   | After   | Improvement         |
-|-----------------------|----------|---------|---------------------|
-| Memory Usage (200M)   | 40GB+    | 100MB   | 400x reduction ⚡   |
-| Processing Time (200M)| Hours    | 45-60s  | >100x faster ⚡     |
-| Chart Data Points     | 200M     | 1,000   | 200,000x reduction |
 
 ### API Usage for Large Datasets
 
@@ -315,30 +294,6 @@ lsof -ti:8080 | xargs kill -9
 - **Virtual Environment**: Always activate Python virtual environment
 - **Node Modules**: Run `npm install` after cloning repository
 - **Dependencies**: Update packages with `pip install -r requirements.txt`
-
-
-### Getting Help
-- **Check Logs**: Review backend console output for error messages
-- **API Testing**: Use `curl` or Postman to test API endpoints directly
-- **Browser Console**: Inspect frontend errors and network requests
-
-
-### 📋 How to Contribute
-1. **Fork the repository** and create a feature branch
-2. **Make your changes** with clear commit messages
-3. **Test thoroughly** to ensure functionality
-4. **Submit a pull request** with a detailed description
-
-### 🎯 Development Guidelines
-- Follow existing code style and conventions
-- Add appropriate error handling and logging
-- Update documentation for new features
-- Ensure cross-browser compatibility
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
 
 ### API Endpoints Still Functional
 
@@ -412,10 +367,31 @@ This script streamlines the workflow for quickly setting up and running Lyiv wit
 
 
 
-## 🤝 Contributing
+## Getting Help
+- **Check Logs**: Review backend console output for error messages
+- **API Testing**: Use `curl` or Postman to test API endpoints directly
+- **Browser Console**: Inspect frontend errors and network requests
+
+
+## 🎯 Development Guidelines
+- Follow existing code style and conventions
+- Add appropriate error handling and logging
+- Update documentation for new features
+- Ensure cross-browser compatibility
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+
+## 📋 How to Contribute
 
 We welcome contributions to improve Lyiv! Here are some areas where you can help:
 
+1. **Bug Fixes**: Identify and fix bugs in the codebase
+2. **New Features**: Propose and implement new features
+3. **Documentation**: Improve documentation for better clarity
+4. **Testing**: Add unit tests to ensure code reliability
 
 ---
 
