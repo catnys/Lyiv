@@ -1,0 +1,2 @@
+# Ignore gem5 output and large files
+m5out/
