@@ -651,29 +651,38 @@ print(f"Processing time: {analysis['performance']['processing_time_seconds']}s")
 4. **Parallel processing**: Multi-threaded parsing for even faster analysis
 5. **Incremental loading**: Progressive data loading in frontend
 
-### Monitoring
-
-The optimized code includes performance logging:
-```
-⚡ Counting total spills using streaming...
-📊 Total spills found: 200,000,000
-⚡ Large dataset detected (200,000,000 spills). Using optimized sampling...
-⚡ Using reservoir sampling: 10,000 samples from 200,000,000 spills
-✅ Sampled 10,000 events in 45.23s
-📉 Reduced chart data to 1,000 points for visualization
-```
 
 ---
 
-## Conclusion
+## 🛠️ Automated Project Startup
 
-The optimized implementation can now handle **200 million+ spill records** efficiently using:
-- **Streaming algorithms** (O(1) memory)
-- **Reservoir sampling** (statistical validity)
-- **Adaptive strategies** (small vs large datasets)
-- **Limited visualization data** (frontend performance)
+You can use the provided shell script `run_lyiv.sh` to automate the setup and running of Lyiv:
 
-Memory usage reduced from **40GB+ to ~100MB**, and processing time reduced from **hours to seconds**.
+### Usage
+
+```bash
+chmod +x run_lyiv.sh
+./run_lyiv.sh
+```
+
+**What this script does:**
+1. Copies the `m5out` directory from your gem5 results into the Lyiv project.
+2. Activates the Python virtual environment.
+3. Runs the test script (`test_optimization.py`) to verify analysis.
+4. Asks if you want to proceed:
+   - If you answer `y` or `Y`, it starts both backend and frontend servers automatically.
+   - If you answer `n` or `N`, it terminates the process.
+   - For any other input, it asks again until you answer `y` or `n`.
+
+**Example output:**
+```
+✅ m5out successfully copied to Lyiv/m5out.
+✅ Virtual environment activated.
+Running test_optimization.py...
+Do you want to proceed and run backend & frontend? (y/n):
+```
+
+This script streamlines the workflow for quickly setting up and running Lyiv with your latest gem5 simulation data.
 
 ---
 
