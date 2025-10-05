@@ -6,7 +6,7 @@
 Simple API service for basic gem5 metrics.
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 import logging
 import os
 
@@ -128,6 +128,71 @@ def get_spill_analysis():
         return jsonify(APIResponse.success(spill_data, "Spill analysis data retrieved"))
     except Exception as e:
         return jsonify(handle_exception(e, "get_spill_analysis")), 500
+
+@simple_api_bp.route('/spills/search', methods=['GET'])
+def search_spills():
+    """Streaming spill search with pagination (no full-file load)."""
+    try:
+        if simple_reader is None:
+            return jsonify(APIResponse.error("Data reader not initialized")), 500
+
+        q = request.args.get('q', '', type=str)
+        field = request.args.get('field', 'all', type=str)
+        offset = request.args.get('offset', 0, type=int)
+        limit = request.args.get('limit', 100, type=int)
+        use_regex = request.args.get('regex', 'false').lower() == 'true'
+
+        result = simple_reader.search_spills(q=q, field=field, offset=offset, limit=limit, use_regex=use_regex)
+        return jsonify(APIResponse.success(result, "Spill search results"))
+    except Exception as e:
+        return jsonify(handle_exception(e, "search_spills")), 500
+
+@simple_api_bp.route('/spills/count', methods=['GET'])
+def count_spills():
+    """Count spills matching filter (stream scan)."""
+    try:
+        if simple_reader is None:
+            return jsonify(APIResponse.error("Data reader not initialized")), 500
+
+        q = request.args.get('q', '', type=str)
+        field = request.args.get('field', 'all', type=str)
+        max_scan = request.args.get('max_scan_lines', 0, type=int)
+        use_regex = request.args.get('regex', 'false').lower() == 'true'
+
+        result = simple_reader.count_spills(q=q, field=field, max_scan_lines=max_scan, use_regex=use_regex)
+        return jsonify(APIResponse.success(result, "Spill count computed"))
+    except Exception as e:
+        return jsonify(handle_exception(e, "count_spills")), 500
+
+@simple_api_bp.route('/spills/sample', methods=['GET'])
+def sample_spills():
+    """Reservoir sample spills (stream scan)."""
+    try:
+        if simple_reader is None:
+            return jsonify(APIResponse.error("Data reader not initialized")), 500
+
+        n = request.args.get('n', 1000, type=int)
+        result = simple_reader.sample_spills(n=n)
+        return jsonify(APIResponse.success(result, "Spill sample retrieved"))
+    except Exception as e:
+        return jsonify(handle_exception(e, "sample_spills")), 500
+
+@simple_api_bp.route('/spills/range', methods=['GET'])
+def range_spills():
+    """Filter spills by store_inst_count range with pagination (stream scan)."""
+    try:
+        if simple_reader is None:
+            return jsonify(APIResponse.error("Data reader not initialized")), 500
+
+        min_store = request.args.get('min_store_inst', default=None, type=int)
+        max_store = request.args.get('max_store_inst', default=None, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        limit = request.args.get('limit', 100, type=int)
+
+        result = simple_reader.range_spills(min_store_inst=min_store, max_store_inst=max_store, offset=offset, limit=limit)
+        return jsonify(APIResponse.success(result, "Spill range results"))
+    except Exception as e:
+        return jsonify(handle_exception(e, "range_spills")), 500
 
 @simple_api_bp.route('/status', methods=['GET'])
 def get_status():

@@ -801,8 +801,240 @@ class SimpleGem5Reader:
         else:
             return 'Unknown'
     
-    def parse_spill_log(self, spill_log_path: str) -> List[Dict[str, Any]]:
-        """Parse spill log file and return structured data"""
+    # --- Streaming spill utilities (memory-safe for very large files) ---
+    def _iter_spill_lines(self, spill_log_path: str):
+        """Yield parsed SPILL rows one-by-one without loading whole file into memory."""
+        try:
+            if not spill_log_path or not os.path.exists(spill_log_path):
+                return
+            with open(spill_log_path, 'r') as f:
+                for line_num, line in enumerate(f, 1):
+                    if not line or not line.startswith('SPILL,'):
+                        continue
+                    parts = line.rstrip('\n').split(',')
+                    if len(parts) < 9:
+                        continue
+                    yield (line_num, parts)
+        except Exception as e:
+            logger.error(f"Error streaming spill lines: {e}")
+
+    def search_spills(self, q: str = '', field: str = 'all', offset: int = 0, limit: int = 100, use_regex: bool = False) -> Dict[str, Any]:
+        """Search spills by streaming; returns paginated matches without loading entire file.
+
+        Fields: all|id|pc|load_pc|store_pc|mem|time
+        """
+        import re, time
+        start_ts = time.time()
+        spill_log_path = self._find_spill_stats_file()
+        items = []
+        scanned = 0
+        next_offset = offset
+
+        pattern = None
+        term = q or ''
+        if use_regex and term:
+            try:
+                pattern = re.compile(term, re.IGNORECASE)
+            except re.error:
+                pattern = None
+        elif term and '*' in term:
+            # wildcard -> regex
+            try:
+                pattern = re.compile(term.replace('*', '.*'), re.IGNORECASE)
+            except re.error:
+                pattern = None
+        term_lower = term.lower()
+
+        def matches(parts):
+            # parts: ["SPILL", store_pc, load_pc, mem, store_tick, load_tick, tick_diff, store_ic, load_ic]
+            if not term:
+                return True
+            candidates = []
+            if field in ('all', 'pc', 'store_pc'):
+                candidates.append(parts[1])
+            if field in ('all', 'pc', 'load_pc'):
+                candidates.append(parts[2])
+            if field in ('all', 'mem'):
+                candidates.append(parts[3])
+            if field in ('all', 'time'):
+                candidates.extend([parts[4], parts[5], parts[6]])
+            if field == 'id':
+                candidates.append(str(parts[-1]))
+            if pattern:
+                return any(pattern.search(c or '') for c in candidates)
+            return any((c or '').lower().find(term_lower) != -1 for c in candidates)
+
+        for idx, parts in self._iter_spill_lines(spill_log_path):
+            scanned += 1
+            if scanned <= offset:
+                continue
+            if matches(parts):
+                items.append({
+                    'id': str(idx),
+                    'pc': parts[1],
+                    'load_pc': parts[2],
+                    'store_pc': parts[1],
+                    'memory_address': parts[3],
+                    'store_tick': int(parts[4]),
+                    'load_tick': int(parts[5]),
+                    'duration': int(parts[6]),
+                })
+                if len(items) >= limit:
+                    next_offset = offset + scanned
+                    break
+
+        took_ms = int((time.time() - start_ts) * 1000)
+        return {
+            'items': items,
+            'next_offset': next_offset if len(items) >= limit else None,
+            'scanned_lines': scanned,
+            'took_ms': took_ms,
+            'spill_file': os.path.basename(spill_log_path) if spill_log_path else None
+        }
+
+        
+    def count_spills(self, q: str = '', field: str = 'all', max_scan_lines: int = 0, use_regex: bool = False) -> Dict[str, Any]:
+        """Count matching spills by streaming; optional cap with max_scan_lines for responsiveness."""
+        import re, time
+        start_ts = time.time()
+        spill_log_path = self._find_spill_stats_file()
+        count = 0
+        scanned = 0
+
+        pattern = None
+        term = q or ''
+        if use_regex and term:
+            try:
+                pattern = re.compile(term, re.IGNORECASE)
+            except re.error:
+                pattern = None
+        elif term and '*' in term:
+            try:
+                pattern = re.compile(term.replace('*', '.*'), re.IGNORECASE)
+            except re.error:
+                pattern = None
+        term_lower = term.lower()
+
+        def matches(parts):
+            if not term:
+                return True
+            candidates = []
+            if field in ('all', 'pc', 'store_pc'):
+                candidates.append(parts[1])
+            if field in ('all', 'pc', 'load_pc'):
+                candidates.append(parts[2])
+            if field in ('all', 'mem'):
+                candidates.append(parts[3])
+            if field in ('all', 'time'):
+                candidates.extend([parts[4], parts[5], parts[6]])
+            if pattern:
+                return any(pattern.search(c or '') for c in candidates)
+            return any((c or '').lower().find(term_lower) != -1 for c in candidates)
+
+        for _, parts in self._iter_spill_lines(spill_log_path):
+            scanned += 1
+            if matches(parts):
+                count += 1
+            if max_scan_lines and scanned >= max_scan_lines:
+                break
+
+        took_ms = int((time.time() - start_ts) * 1000)
+        return {
+            'count': count,
+            'scanned_lines': scanned,
+            'partial': bool(max_scan_lines and scanned >= max_scan_lines),
+            'took_ms': took_ms,
+            'spill_file': os.path.basename(spill_log_path) if spill_log_path else None
+        }
+
+    def sample_spills(self, n: int = 1000) -> Dict[str, Any]:
+        """Reservoir sample n spills without loading entire file."""
+        import random, time
+        start_ts = time.time()
+        spill_log_path = self._find_spill_stats_file()
+        reservoir = []
+        scanned = 0
+        for idx, parts in self._iter_spill_lines(spill_log_path):
+            scanned += 1
+            item = {
+                'id': str(idx),
+                'pc': parts[1],
+                'load_pc': parts[2],
+                'store_pc': parts[1],
+                'memory_address': parts[3],
+                'store_tick': int(parts[4]),
+                'load_tick': int(parts[5]),
+                'duration': int(parts[6]),
+            }
+            if len(reservoir) < n:
+                reservoir.append(item)
+            else:
+                j = random.randint(0, scanned - 1)
+                if j < n:
+                    reservoir[j] = item
+        took_ms = int((time.time() - start_ts) * 1000)
+        return {
+            'items': reservoir,
+            'scanned_lines': scanned,
+            'took_ms': took_ms,
+            'spill_file': os.path.basename(spill_log_path) if spill_log_path else None
+        }
+
+    def range_spills(self, min_store_inst: int = None, max_store_inst: int = None, offset: int = 0, limit: int = 100) -> Dict[str, Any]:
+        """Return spills filtered by store_inst_count range via streaming scan."""
+        import time
+        start_ts = time.time()
+        spill_log_path = self._find_spill_stats_file()
+        items = []
+        scanned = 0
+        delivered = 0
+        next_offset = offset
+
+        for idx, parts in self._iter_spill_lines(spill_log_path):
+            scanned += 1
+            if scanned <= offset:
+                continue
+            try:
+                store_ic = int(parts[7])
+            except Exception:
+                continue
+            if min_store_inst is not None and store_ic < min_store_inst:
+                continue
+            if max_store_inst is not None and store_ic > max_store_inst:
+                continue
+            items.append({
+                'id': str(idx),
+                'pc': parts[1],
+                'load_pc': parts[2],
+                'store_pc': parts[1],
+                'memory_address': parts[3],
+                'store_tick': int(parts[4]),
+                'load_tick': int(parts[5]),
+                'duration': int(parts[6]),
+                'store_inst_count': store_ic,
+                'load_inst_count': int(parts[8]) if len(parts) > 8 else None
+            })
+            delivered += 1
+            if delivered >= limit:
+                next_offset = offset + scanned
+                break
+
+        took_ms = int((time.time() - start_ts) * 1000)
+        return {
+            'items': items,
+            'next_offset': next_offset if delivered >= limit else None,
+            'scanned_lines': scanned,
+            'took_ms': took_ms,
+            'spill_file': os.path.basename(spill_log_path) if spill_log_path else None
+        }
+
+    def parse_spill_log(self, spill_log_path: str, max_events: int = 50000) -> List[Dict[str, Any]]:
+        """Parse spill log file and return structured data (OPTIMIZED: limits to max_events for memory efficiency)
+        
+        Args:
+            spill_log_path: Path to spill log file
+            max_events: Maximum number of events to load (default: 50000 for memory efficiency)
+        """
         spill_events = []
         
         try:
@@ -810,8 +1042,15 @@ class SimpleGem5Reader:
                 logger.warning(f"Spill log file not found: {spill_log_path}")
                 return spill_events
             
+            logger.info(f"⚡ Optimized parsing: Loading up to {max_events} events for analysis")
+            
             with open(spill_log_path, 'r') as f:
                 for line_num, line in enumerate(f, 1):
+                    # Stop if we've reached the limit
+                    if len(spill_events) >= max_events:
+                        logger.info(f"⚠️ Reached max_events limit ({max_events}), stopping parse")
+                        break
+                    
                     line = line.strip()
                     
                     # Skip comments and empty lines
@@ -839,7 +1078,7 @@ class SimpleGem5Reader:
                                 logger.warning(f"Error parsing line {line_num}: {e}")
                                 continue
             
-            logger.info(f"Parsed {len(spill_events)} spill events from {spill_log_path}")
+            logger.info(f"✅ Parsed {len(spill_events)} spill events from {spill_log_path}")
             return spill_events
             
         except Exception as e:
@@ -847,224 +1086,288 @@ class SimpleGem5Reader:
             return spill_events
 
     def get_spill_analysis_data(self) -> Dict[str, Any]:
-        """Get comprehensive spill analysis data"""
+        """Get comprehensive spill analysis data (OPTIMIZED for large datasets using streaming)"""
         try:
-            # Look for spill stats file (x86_spill_stats.txt, arm_spill_stats.txt, riscv_spill_stats.txt, etc.)
-            spill_log_path = self._find_spill_stats_file()
-            spill_events = self.parse_spill_log(spill_log_path) if spill_log_path else []
+            import time
+            start_time = time.time()
             
-            if not spill_events:
-                return {
-                    'spill_count': 0,
-                    'architecture': 'Unknown',
-                    'spill_file': 'None',
-                    'statistics': {
-                        'total_spills': 0,
-                        'avg_spill_duration': 0,
-                        'unique_memory_addresses': 0,
-                        'unique_store_pcs': 0,
-                        'unique_load_pcs': 0,
-                        'max_spill_duration': 0,
-                        'min_spill_duration': 0
-                    }
-                }
+            # Look for spill stats file
+            spill_log_path = self._find_spill_stats_file()
+            
+            if not spill_log_path or not os.path.exists(spill_log_path):
+                return self._empty_spill_analysis()
+            
+            # Count total spills using streaming (fast)
+            logger.info("⚡ Counting total spills using streaming...")
+            total_spills = self._count_total_spills_streaming(spill_log_path)
+            logger.info(f"📊 Total spills found: {total_spills:,}")
+            
+            # Decide strategy based on file size
+            if total_spills > 100000:
+                # Large dataset: Use reservoir sampling for statistics
+                logger.info(f"⚡ Large dataset detected ({total_spills:,} spills). Using optimized sampling...")
+                return self._get_spill_analysis_sampled(spill_log_path, total_spills)
+            else:
+                # Small dataset: Load all events
+                logger.info(f"✅ Small dataset ({total_spills:,} spills). Loading all events...")
+                spill_events = self.parse_spill_log(spill_log_path, max_events=total_spills)
+                return self._get_spill_analysis_full(spill_events, spill_log_path, total_spills)
+            
+        except Exception as e:
+            logger.error(f"Error generating spill analysis data: {e}")
+            return self._empty_spill_analysis()
+    
+    def _count_total_spills_streaming(self, spill_log_path: str) -> int:
+        """Count total spills by streaming through file (memory efficient)"""
+        count = 0
+        try:
+            with open(spill_log_path, 'r') as f:
+                for line in f:
+                    if line.startswith('SPILL,'):
+                        count += 1
+        except Exception as e:
+            logger.error(f"Error counting spills: {e}")
+        return count
+    
+    def _empty_spill_analysis(self) -> Dict[str, Any]:
+        """Return empty spill analysis structure"""
+        return {
+            'spill_count': 0,
+            'architecture': 'Unknown',
+            'spill_file': 'None',
+            'statistics': {
+                'total_spills': 0,
+                'avg_spill_duration': 0,
+                'unique_memory_addresses': 0,
+                'unique_store_pcs': 0,
+                'unique_load_pcs': 0,
+                'max_spill_duration': 0,
+                'min_spill_duration': 0
+            },
+            'charts': {}
+        }
+    
+    def _get_spill_analysis_sampled(self, spill_log_path: str, total_spills: int) -> Dict[str, Any]:
+        """Get spill analysis using reservoir sampling (optimized for large datasets)"""
+        import random
+        import time
+        
+        start_time = time.time()
+        
+        # Reservoir sampling parameters
+        SAMPLE_SIZE = 10000  # Sample 10k events for analysis
+        
+        logger.info(f"⚡ Using reservoir sampling: {SAMPLE_SIZE:,} samples from {total_spills:,} spills")
+        
+        # Reservoir sampling for representative sample
+        reservoir = []
+        
+        # Statistics accumulators (computed during streaming)
+        duration_sum = 0
+        duration_min = float('inf')
+        duration_max = 0
+        unique_memory_addrs = set()
+        unique_store_pcs = set()
+        unique_load_pcs = set()
+        
+        try:
+            with open(spill_log_path, 'r') as f:
+                idx = 0
+                for line in f:
+                    if not line.startswith('SPILL,'):
+                        continue
+                    
+                    parts = line.strip().split(',')
+                    if len(parts) < 9:
+                        continue
+                    
+                    try:
+                        tick_diff = int(parts[6])
+                        duration_sum += tick_diff
+                        duration_min = min(duration_min, tick_diff)
+                        duration_max = max(duration_max, tick_diff)
+                        
+                        # Track ALL unique values (no sampling - process entire dataset)
+                        # Sets automatically keep only unique values, memory efficient
+                        unique_memory_addrs.add(parts[3])
+                        unique_store_pcs.add(parts[1])
+                        unique_load_pcs.add(parts[2])
+                        
+                        # Reservoir sampling for detailed analysis (only for charts)
+                        event = {
+                            'store_pc': parts[1],
+                            'load_pc': parts[2],
+                            'memory_address': parts[3],
+                            'store_tick': int(parts[4]),
+                            'load_tick': int(parts[5]),
+                            'tick_diff': tick_diff,
+                            'store_inst_count': int(parts[7]),
+                            'load_inst_count': int(parts[8]),
+                        }
+                        
+                        if len(reservoir) < SAMPLE_SIZE:
+                            reservoir.append(event)
+                        else:
+                            # Reservoir sampling algorithm
+                            j = random.randint(0, idx)
+                            if j < SAMPLE_SIZE:
+                                reservoir[j] = event
+                        
+                        idx += 1
+                        
+                        # Progress logging for large datasets
+                        if idx % 1000000 == 0:
+                            logger.info(f"⏳ Processed {idx:,} spills... (Unique: {len(unique_memory_addrs):,} addrs, {len(unique_store_pcs):,} store PCs, {len(unique_load_pcs):,} load PCs)")
+                        
+                    except (ValueError, IndexError):
+                        continue
+            
+            elapsed = time.time() - start_time
+            logger.info(f"✅ Processed {idx:,} events in {elapsed:.2f}s")
+            logger.info(f"📊 Final unique counts: {len(unique_memory_addrs):,} memory addresses, {len(unique_store_pcs):,} store PCs, {len(unique_load_pcs):,} load PCs")
             
             # Calculate statistics
-            total_spills = len(spill_events)
-            avg_spill_duration = sum(event['tick_diff'] for event in spill_events) / total_spills if total_spills > 0 else 0
+            avg_duration = duration_sum / total_spills if total_spills > 0 else 0
             
-            # Extract memory addresses and PC patterns
-            memory_addresses = [int(event['memory_address'], 16) for event in spill_events]
-            store_pcs = [int(event['store_pc'], 16) for event in spill_events]
-            load_pcs = [int(event['load_pc'], 16) for event in spill_events]
-            
-            # Group memory addresses by ranges
-            memory_ranges = {}
-            for addr in memory_addresses:
-                range_key = (addr // 1024) * 1024  # 1KB buckets
-                memory_ranges[range_key] = memory_ranges.get(range_key, 0) + 1
-            
-            # Group PC patterns
-            pc_patterns = {}
-            for event in spill_events:
-                pattern_key = f"{event['store_pc']}->{event['load_pc']}"
-                pc_patterns[pattern_key] = pc_patterns.get(pattern_key, 0) + 1
-            
-            # Create scatter plot data
-            scatter_plots = {
-                'spill_timing': {
-                    'title': 'Spill Timing Analysis',
-                    'x_label': 'Store Instruction Count',
-                    'y_label': 'Spill Duration (Ticks)',
-                    'description': 'Relationship between instruction execution and spill duration',
-                    'data': [
-                        {
-                            'x': event['store_inst_count'],
-                            'y': event['tick_diff'],
-                            'group': 'Spill Event',
-                            'color': '#ef4444',
-                            'size': 12,
-                            'details': {
-                                'store_pc': event['store_pc'],
-                                'load_pc': event['load_pc'],
-                                'memory_address': event['memory_address'],
-                                'duration_ticks': event['tick_diff'],
-                                'instruction_gap': event['load_inst_count'] - event['store_inst_count']
-                            }
-                        } for event in spill_events
-                    ]
-                },
-                'memory_distribution': {
-                    'title': 'Memory Address Distribution',
-                    'x_label': 'Memory Address (Hex)',
-                    'y_label': 'Spill Count',
-                    'description': 'Distribution of spills across memory addresses',
-                    'data': [
-                        {
-                            'x': addr,
-                            'y': count,
-                            'group': 'Memory Range',
-                            'color': '#3b82f6',
-                            'size': 15,
-                            'details': {
-                                'memory_range': f"0x{addr:x}",
-                                'spill_count': count,
-                                'range_size': '1KB'
-                            }
-                        } for addr, count in memory_ranges.items()
-                    ]
-                },
-                'pc_correlation': {
-                    'title': 'PC Correlation Analysis',
-                    'x_label': 'Store PC (Hex)',
-                    'y_label': 'Load PC (Hex)',
-                    'description': 'Correlation between store and load program counters',
-                    'data': [
-                        {
-                            'x': int(event['store_pc'], 16),
-                            'y': int(event['load_pc'], 16),
-                            'group': 'PC Pair',
-                            'color': '#10b981',
-                            'size': 10,
-                            'details': {
-                                'store_pc': event['store_pc'],
-                                'load_pc': event['load_pc'],
-                                'pc_distance': int(event['load_pc'], 16) - int(event['store_pc'], 16),
-                                'memory_address': event['memory_address']
-                            }
-                        } for event in spill_events
-                    ]
-                }
-            }
-            
-            # Create heatmap data
-            heatmaps = {
-                'memory_heatmap': {
-                    'title': 'Memory Address Heatmap',
-                    'x_label': 'Memory Address Range',
-                    'y_label': 'Spill Frequency',
-                    'description': 'Heatmap showing spill frequency across memory ranges',
-                    'data': [
-                        {
-                            'x': addr,
-                            'y': 0,
-                            'value': count,
-                            'group': 'Memory Range',
-                            'color': self._get_heatmap_color(count, max(memory_ranges.values())),
-                            'details': {
-                                'memory_range': f"0x{addr:x}",
-                                'spill_count': count,
-                                'percentage': (count / total_spills * 100) if total_spills > 0 else 0
-                            }
-                        } for addr, count in memory_ranges.items()
-                    ]
-                },
-                'timing_heatmap': {
-                    'title': 'Spill Timing Heatmap',
-                    'x_label': 'Store Instruction Count',
-                    'y_label': 'Load Instruction Count',
-                    'description': 'Heatmap showing spill timing patterns',
-                    'data': [
-                        {
-                            'x': event['store_inst_count'],
-                            'y': event['load_inst_count'],
-                            'value': event['tick_diff'],
-                            'group': 'Timing Pattern',
-                            'color': self._get_heatmap_color(event['tick_diff'], max(event['tick_diff'] for event in spill_events)),
-                            'details': {
-                                'store_inst': event['store_inst_count'],
-                                'load_inst': event['load_inst_count'],
-                                'instruction_gap': event['load_inst_count'] - event['store_inst_count'],
-                                'tick_duration': event['tick_diff']
-                            }
-                        } for event in spill_events
-                    ]
-                }
-            }
-            
-            # Detect architecture from filename
+            # Detect architecture
             architecture = self._detect_architecture_from_filename(spill_log_path)
             
-            # Calculate performance impact metrics
-            total_instructions = self._get_stat_value('simInsts', int) or 0
-            total_cycles = self._get_stat_value('system.cpu.numCycles', int) or 0
-            total_memory_refs = self._get_stat_value('system.cpu.commitStats0.numMemRefs', int) or 0
-            total_loads = self._get_stat_value('system.cpu.commitStats0.numLoadInsts', int) or 0
-            total_stores = self._get_stat_value('system.cpu.commitStats0.numStoreInsts', int) or 0
+            # Generate lightweight charts from sample
+            charts = self._generate_lightweight_charts(reservoir, total_spills)
             
-            # Calculate spill impact
-            spill_memory_refs = total_spills * 2  # Each spill has store + load
-            normal_memory_refs = (total_loads + total_stores) - spill_memory_refs
-            
-            # Calculate spill cycles
-            total_spill_cycles = sum(event['tick_diff'] for event in spill_events)
-            # Ensure normal cycles is not negative (spill cycles might be larger than total cycles)
-            normal_cycles = max(0, total_cycles - total_spill_cycles)
-            
-            # Calculate CPI breakdown
-            spill_cpi = (total_spill_cycles / total_instructions) if total_instructions > 0 else 0
-            normal_cpi = (normal_cycles / total_instructions) if total_instructions > 0 else 0
-            total_cpi = spill_cpi + normal_cpi
-            
-            # Calculate performance loss percentage
-            performance_loss_percentage = (spill_cpi / total_cpi * 100) if total_cpi > 0 else 0
-            
-            # Generate detailed analysis data for better charts
-            detailed_charts = self._generate_detailed_charts(spill_events, total_instructions, total_cycles)
+            # Add unique memory addresses list to charts (sorted for better presentation)
+            charts['unique_memory_addresses'] = {
+                'title': 'All Unique Memory Addresses',
+                'description': f'Complete list of all unique memory addresses used in spills ({len(unique_memory_addrs):,} total)',
+                'addresses': sorted(list(unique_memory_addrs)),
+                'count': len(unique_memory_addrs)
+            }
             
             return {
                 'spill_count': total_spills,
                 'architecture': architecture,
                 'spill_file': os.path.basename(spill_log_path),
+                'sampled': True,
+                'sample_size': len(reservoir),
                 'statistics': {
                     'total_spills': total_spills,
-                    'avg_spill_duration': avg_spill_duration,
-                    'unique_memory_addresses': len(set(memory_addresses)),
-                    'unique_store_pcs': len(set(store_pcs)),
-                    'unique_load_pcs': len(set(load_pcs)),
-                    'max_spill_duration': max(event['tick_diff'] for event in spill_events) if spill_events else 0,
-                    'min_spill_duration': min(event['tick_diff'] for event in spill_events) if spill_events else 0
+                    'avg_spill_duration': round(avg_duration, 2),
+                    'unique_memory_addresses': len(unique_memory_addrs),  # EXACT count from all data
+                    'unique_store_pcs': len(unique_store_pcs),  # EXACT count from all data
+                    'unique_load_pcs': len(unique_load_pcs),  # EXACT count from all data
+                    'max_spill_duration': duration_max,
+                    'min_spill_duration': duration_min if duration_min != float('inf') else 0
                 },
-                'charts': detailed_charts
+                'charts': charts,
+                'performance': {
+                    'processing_time_seconds': round(elapsed, 2),
+                    'spills_per_second': int(total_spills / elapsed) if elapsed > 0 else 0
+                }
             }
             
         except Exception as e:
-            logger.error(f"Error generating spill analysis data: {e}")
-            return {
-                'spill_count': 0,
-                'architecture': 'unknown',
-                'spill_file': 'none',
-                'statistics': {
-                    'total_spills': 0,
-                    'avg_spill_duration': 0,
-                    'unique_memory_addresses': 0,
-                    'unique_store_pcs': 0,
-                    'unique_load_pcs': 0,
-                    'max_spill_duration': 0,
-                    'min_spill_duration': 0
-                },
-                'charts': {}
+            logger.error(f"Error in sampled analysis: {e}")
+            return self._empty_spill_analysis()
+    
+    def _get_spill_analysis_full(self, spill_events: List[Dict[str, Any]], spill_log_path: str, total_spills: int) -> Dict[str, Any]:
+        """Get full spill analysis for smaller datasets"""
+        if not spill_events:
+            return self._empty_spill_analysis()
+        
+        # Calculate statistics
+        avg_spill_duration = sum(event['tick_diff'] for event in spill_events) / len(spill_events)
+        
+        # Extract unique values (that is why we use sets to avoid duplicates)
+        memory_addresses = set(event['memory_address'] for event in spill_events)
+        store_pcs = set(event['store_pc'] for event in spill_events)
+        load_pcs = set(event['load_pc'] for event in spill_events)
+        
+        # Detect architecture
+        architecture = self._detect_architecture_from_filename(spill_log_path)
+        
+        # Generate charts (lightweight version still)
+        charts = self._generate_lightweight_charts(spill_events, total_spills)
+        
+        # Add unique memory addresses list to charts (sorted for better presentation)
+        charts['unique_memory_addresses'] = {
+            'title': 'All Unique Memory Addresses',
+            'description': f'Complete list of all unique memory addresses used in spills ({len(memory_addresses):,} total)',
+            'addresses': sorted(list(memory_addresses)),
+            'count': len(memory_addresses)
+        }
+        
+        return {
+            'spill_count': total_spills,
+            'architecture': architecture,
+            'spill_file': os.path.basename(spill_log_path),
+            'sampled': False,
+            'statistics': {
+                'total_spills': total_spills,
+                'avg_spill_duration': round(avg_spill_duration, 2),
+                'unique_memory_addresses': len(memory_addresses),
+                'unique_store_pcs': len(store_pcs),
+                'unique_load_pcs': len(load_pcs),
+                'max_spill_duration': max(event['tick_diff'] for event in spill_events),
+                'min_spill_duration': min(event['tick_diff'] for event in spill_events)
+            },
+            'charts': charts
+        }
+    
+    def _generate_lightweight_charts(self, spill_sample: List[Dict[str, Any]], total_spills: int) -> Dict[str, Any]:
+        """Generate lightweight chart data from sample (optimized for performance)"""
+        if not spill_sample:
+            return {}
+        
+        # Limit sample size for chart generation
+        MAX_CHART_POINTS = 1000
+        if len(spill_sample) > MAX_CHART_POINTS:
+            import random
+            spill_sample = random.sample(spill_sample, MAX_CHART_POINTS)
+            logger.info(f"📉 Reduced chart data to {MAX_CHART_POINTS} points for visualization")
+        
+        # 1. Duration distribution (histogram)
+        durations = [event['tick_diff'] for event in spill_sample]
+        duration_buckets = self._create_histogram_buckets(durations, 20)
+        
+        # 2. Simple scatter plot data
+        scatter_data = []
+        for i, event in enumerate(spill_sample):
+            scatter_data.append({
+                'id': f"spill_{i}",
+                'duration': event['tick_diff'],
+                'store_inst': event['store_inst_count'],
+                'load_inst': event['load_inst_count'],
+                'pc': event['store_pc'],
+                'memory_address': event['memory_address']
+            })
+        
+        # 3. PC pattern analysis (top patterns only)
+        pc_patterns = self._analyze_pc_patterns(spill_sample)
+        
+        return {
+            'spill_duration_distribution': {
+                'title': 'Spill Duration Distribution',
+                'description': f'Distribution of spill durations (sample of {len(spill_sample):,} from {total_spills:,})',
+                'buckets': duration_buckets,
+                'total_spills': total_spills,
+                'sample_size': len(spill_sample),
+                'avg_duration': sum(durations) / len(durations) if durations else 0,
+                'min_duration': min(durations) if durations else 0,
+                'max_duration': max(durations) if durations else 0
+            },
+            'scatter_plot_data': {
+                'title': 'Spill Impact Analysis',
+                'description': f'Scatter plot showing spill patterns (sample of {len(scatter_data):,})',
+                'data': scatter_data,
+                'total_points': len(scatter_data)
+            },
+            'pc_pattern_analysis': {
+                'title': 'PC Pattern Analysis',
+                'description': 'Most frequent spill locations',
+                'patterns': pc_patterns,
+                'sample_size': len(spill_sample)
             }
+        }
     def _generate_detailed_charts(self, spill_events, total_instructions, total_cycles):
         """Generate detailed chart data for meaningful visualizations"""
         if not spill_events:
